@@ -13,6 +13,8 @@
 
 #include <string>
 
+using Socket = int;
+
 const int DEFAULT_PORT = 20160;
 const int MIN_PORT = 1;
 const int MAX_PORT = (1 << 16) - 1;
@@ -23,17 +25,17 @@ const int MAX_CLIENTS = 20;
 
 enum class ExitCode { Ok = 0, InvalidArguments = 1, BadData = 100 };
 
-void _connect(int, const sockaddr *, socklen_t);
+void _connect(Socket, const sockaddr *, socklen_t);
 
 void _exit(ExitCode code);
 
 void _getaddrinfo(const char *, const char *, const addrinfo *, addrinfo **);
 
-int _socket(int, int, int);
+Socket _socket(int, int, int);
 
-void _close(int);
+void _close(Socket);
 
-void _write(int, const void *, size_t);
+void _write(Socket, const void *, size_t);
 
 int getPort(const char *cPort);
 

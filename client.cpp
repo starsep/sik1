@@ -39,7 +39,7 @@ int connectClient(std::string host, int port) {
                &addr_result);
 
   // initialize socket according to getaddrinfo results
-  int sock = _socket(addr_result->ai_family, addr_result->ai_socktype,
+  Socket sock = _socket(addr_result->ai_family, addr_result->ai_socktype,
                      addr_result->ai_protocol);
 
   // connect socket to the server
@@ -54,7 +54,7 @@ int main(int argc, const char **argv) {
   std::string host = p.first;
   int port = p.second;
   printf("Sending to host %s port: %d\n", host.c_str(), port);
-  int sock = connectClient(host, port);
+  Socket sock = connectClient(host, port);
   const char *msg = "hello world\n";
   _write(sock, msg, strlen(msg));
   _close(sock);

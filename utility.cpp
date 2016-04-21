@@ -35,7 +35,7 @@ int getPort(const char *cPort) {
 
 std::string getHost(const char *cHost) { return std::string(cHost); }
 
-void _connect(int sockfd, const sockaddr *addr, socklen_t addrlen) {
+void _connect(Socket sockfd, const sockaddr *addr, socklen_t addrlen) {
   int err = connect(sockfd, addr, addrlen);
   if (err < 0) {
     syserr("connect");
@@ -54,22 +54,22 @@ void _getaddrinfo(const char *node, const char *service, const addrinfo *hints,
   }
 }
 
-int _socket(int domain, int type, int protocol) {
-  int result = socket(domain, type, protocol);
+Socket _socket(int domain, int type, int protocol) {
+  Socket result = socket(domain, type, protocol);
   if (result < 0) {
     syserr("socket");
   }
   return result;
 }
 
-void _write(int fd, const void *buf, size_t count) {
+void _write(Socket fd, const void *buf, size_t count) {
   size_t err = write(fd, buf, count);
   if (err != count) {
     syserr("partial / failed write");
   }
 }
 
-void _close(int fd) {
+void _close(Socket fd) {
   int err = close(fd);
   if (err < 0) {
     syserr("close");
