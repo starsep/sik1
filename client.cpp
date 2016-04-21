@@ -2,7 +2,7 @@
 
 void usageClient(const char **argv) {
     printf("Usage: %s host [port]\n", argv[0]);
-    exit(1);
+    exit_(ExitCode::InvalidArguments);
 }
 
 std::pair<std::string, int> get_arguments(int argc, const char **argv) {
@@ -31,5 +31,5 @@ int main(int argc, const char **argv) {
     std::string host = p.first;
     int port = p.second;
     printf("Sending to host %s port: %d\n", host.c_str(), port);
-    return 0;
+    exit_(ExitCode::Ok);
 }

@@ -14,3 +14,7 @@ int getPort(const char *cPort) {
 std::string getHost(const char *cHost) {
     return std::string(cHost);
 }
+
+void exit_(ExitCode code) {
+    exit(static_cast<int>(code));
+}

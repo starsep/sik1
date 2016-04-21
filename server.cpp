@@ -2,7 +2,7 @@
 
 void usageServer(const char **argv) {
     printf("Usage: %s [port]\n", argv[0]);
-    exit(1);
+    exit_(ExitCode::InvalidArguments);
 }
 
 int getArguments(int argc, const char **argv) {
@@ -24,5 +24,5 @@ int getArguments(int argc, const char **argv) {
 int main(int argc, const char **argv) {
     int port = getArguments(argc, argv);
     printf("Listening on port: %d\n", port);
-    return 0;
+    exit_(ExitCode::Ok);
 }
