@@ -26,3 +26,9 @@
 *.exe
 *.out
 *.app
+client
+server
+
+
+# CLion
+.idea/workspace.xml
