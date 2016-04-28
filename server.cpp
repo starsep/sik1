@@ -66,8 +66,6 @@ void removeClient(std::vector<Socket> &clients, Socket client) {
 bool checkEpollError(epoll_event &event, std::vector<Socket> &clients) {
   if ((event.events & EPOLLERR) || (event.events & EPOLLHUP) ||
       (!(event.events & EPOLLIN))) {
-    /* An error has occured on this fd, or the socket is not
-       ready for reading (why were we notified then?) */
     debug() << "epoll error\n";
     removeClient(clients, event.data.fd);
     return true;
@@ -92,8 +90,6 @@ void newConnectionDebug(Socket client, sockaddr in_addr, socklen_t in_len) {
 bool checkListeningSocket(epoll_event &event, Socket sock, Epoll efd,
                           std::vector<Socket> &clients) {
   if (sock == event.data.fd) {
-    /* We have a notification on the listening socket, which
-       means one or more incoming connections. */
     while (true) {
       sockaddr in_addr;
       socklen_t in_len = sizeof in_addr;
@@ -104,8 +100,6 @@ bool checkListeningSocket(epoll_event &event, Socket sock, Epoll efd,
 
       newConnectionDebug(sock, in_addr, in_len);
 
-      /* Make the incoming socket non-blocking and add it to the
-         list of fds to monitor. */
       makeSocketNonBlocking(client);
       addClient(clients, client, efd);
     }
@@ -117,7 +111,6 @@ bool checkListeningSocket(epoll_event &event, Socket sock, Epoll efd,
 std::string getClientData(epoll_event &event, std::vector<Socket> &clients) {
   std::string result;
   char buffer[MAX_LEN];
-  bool done = false;
 
   while (true) {
     ssize_t count = _read(event.data.fd, buffer, MAX_LEN);
@@ -125,18 +118,14 @@ std::string getClientData(epoll_event &event, std::vector<Socket> &clients) {
       break;
     }
     if (count == 0) {
-      /* EOF, end of connection */
-      done = true;
+      debug() << "Closed connection with " << event.data.fd << '\n';
+      removeClient(clients, event.data.fd);
       break;
     }
     buffer[count] = '\0';
     result += buffer;
   }
 
-  if (done) {
-    debug() << "Closed connection with " << event.data.fd << '\n';
-    removeClient(clients, event.data.fd);
-  }
   return result;
 }
 

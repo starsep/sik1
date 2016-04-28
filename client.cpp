@@ -30,14 +30,11 @@ int connectClient(std::string host, int port) {
   addrinfo hints;
   addrinfo *result;
 
-  // 'converting' host/port in string to struct addrinfo
   _getaddrinfo(host.c_str(), std::to_string(port).c_str(), &hints, &result);
 
-  // initialize socket according to getaddrinfo results
   Socket sock =
           _socket(result->ai_family, result->ai_socktype, result->ai_protocol);
 
-  // connect socket to the server
   _connect(sock, result->ai_addr, result->ai_addrlen);
   freeaddrinfo(result);
 
