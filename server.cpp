@@ -189,11 +189,14 @@ int main(int argc, const char **argv) {
       if (!checkEpollError(events[i], clients) &&
           !checkListeningSocket(events[i], sfd, efd, clients)) {
         std::string result = getClientData(events[i], clients);
-        sendToOthers(clients, events[i].data.fd, result);
+        if (result.size() > 0) {
+          sendToOthers(clients, events[i].data.fd, result);
+        }
       }
     }
   }
 
-  delete[] events;
+  delete[]
+          events;
   _exit(ExitCode::Ok);
 }
