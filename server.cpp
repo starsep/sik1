@@ -167,31 +167,10 @@ void sendToOthers(const std::vector <Socket> &clients, const Socket sender, cons
   }
 }
 
-Socket sfd;
-
-void signalHandler(int sig) {
-  debug() << "Caught signal " << sig << ", exiting...\n";
-  int one = 1;
-  setsockopt(sfd, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(int));
-  SIG_DFL(sig);
-  close(sfd);
-  _exit(ExitCode::Ok);
-}
-
-void addSignalHandler() {
-  signal(SIGINT, signalHandler);
-  signal(SIGABRT, signalHandler);
-  signal(SIGILL, signalHandler);
-  signal(SIGFPE, signalHandler);
-  signal(SIGTERM, signalHandler);
-  signal(SIGSEGV, signalHandler);
-}
-
 int main(int argc, const char **argv) {
-  addSignalHandler();
   int port = getArguments(argc, argv);
   debug() << "Listening on port: " << port << "\n";
-  sfd = connectServer(port);
+  Socket sfd = connectServer(port);
   makeSocketNonBlocking(sfd);
   _listen(sfd);
   Epoll efd = _epoll_create();
