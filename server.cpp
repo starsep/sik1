@@ -49,6 +49,56 @@ int connectServer(int port) {
   return sfd;
 }
 
+bool checkEpollError(epoll_event &event) {
+  if ((event.events & EPOLLERR) || (event.events & EPOLLHUP) ||
+      (!(event.events & EPOLLIN))) {
+    /* An error has occured on this fd, or the socket is not
+       ready for reading (why were we notified then?) */
+    debug() << "epoll error\n";
+    close(event.data.fd);
+    return true;
+  }
+  return false;
+}
+
+bool checkListeningSocket(epoll_event &event, Socket sfd, Epoll efd) {
+  if (sfd == event.data.fd) {
+    /* We have a notification on the listening socket, which
+       means one or more incoming connections. */
+    while (true) {
+      sockaddr in_addr;
+      socklen_t in_len;
+      char hbuf[NI_MAXHOST], sbuf[NI_MAXSERV];
+
+      in_len = sizeof in_addr;
+      Socket infd = accept(sfd, &in_addr, &in_len);
+      if (infd == -1) {
+        if ((errno == EAGAIN) || (errno == EWOULDBLOCK)) {
+          /* We have processed all incoming
+             connections. */
+          break;
+        } else {
+          perror("accept");
+          break;
+        }
+      }
+
+      int s = getnameinfo(&in_addr, in_len, hbuf, sizeof hbuf, sbuf,
+                          sizeof sbuf, NI_NUMERICHOST | NI_NUMERICSERV);
+      if (s == 0) {
+        debug() << "Accepted connection on descriptor " << infd << " (host=" << hbuf << ", port=" << sbuf << ")\n";
+      }
+
+      /* Make the incoming socket non-blocking and add it to the
+         list of fds to monitor. */
+      makeSocketNonBlocking(infd);
+      addEpollEvent(efd, infd);
+    }
+    return true;
+  }
+  return false;
+}
+
 int main(int argc, const char **argv) {
   int port = getArguments(argc, argv);
   debug() << "Listening on port: " << port << "\n";
@@ -65,47 +115,11 @@ int main(int argc, const char **argv) {
     int numberOfEvents = epoll_wait(efd, events, MAX_CLIENTS, -1);
     debug() << numberOfEvents << "\n";
     for (int i = 0; i < numberOfEvents; i++) {
-      if ((events[i].events & EPOLLERR) || (events[i].events & EPOLLHUP) ||
-          (!(events[i].events & EPOLLIN))) {
-        /* An error has occured on this fd, or the socket is not
-           ready for reading (why were we notified then?) */
-        debug() << "epoll error\n";
-        close(events[i].data.fd);
+      if (checkEpollError(events[i])) {
         continue;
       }
 
-      else if (sfd == events[i].data.fd) {
-        /* We have a notification on the listening socket, which
-           means one or more incoming connections. */
-        while (true) {
-          sockaddr in_addr;
-          socklen_t in_len;
-          char hbuf[NI_MAXHOST], sbuf[NI_MAXSERV];
-
-          in_len = sizeof in_addr;
-          Socket infd = accept(sfd, &in_addr, &in_len);
-          if (infd == -1) {
-            if ((errno == EAGAIN) || (errno == EWOULDBLOCK)) {
-              /* We have processed all incoming
-                 connections. */
-              break;
-            } else {
-              perror("accept");
-              break;
-            }
-          }
-
-          int s = getnameinfo(&in_addr, in_len, hbuf, sizeof hbuf, sbuf,
-                              sizeof sbuf, NI_NUMERICHOST | NI_NUMERICSERV);
-          if (s == 0) {
-            debug() << "Accepted connection on descriptor " << infd << " (host=" << hbuf << ", port=" << sbuf << ")\n";
-          }
-
-          /* Make the incoming socket non-blocking and add it to the
-             list of fds to monitor. */
-          makeSocketNonBlocking(infd);
-          addEpollEvent(efd, infd);
-        }
+      if (checkListeningSocket(events[i], sfd, efd)) {
         continue;
       } else {
         /* We have data on the fd waiting to be read. Read and
@@ -139,7 +153,7 @@ int main(int argc, const char **argv) {
 
         if (done) {
           debug() << "Closed connection on descriptor " << events[i].data.fd
-                  << '\n';
+          << '\n';
 
           /* Closing the descriptor will make epoll remove it
              from the set of descriptors which are monitored. */
@@ -148,6 +162,8 @@ int main(int argc, const char **argv) {
       }
     }
   }
-  delete[] events;
+
+  delete[]
+          events;
   _exit(ExitCode::Ok);
 }

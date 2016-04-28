@@ -26,6 +26,7 @@ const int MAX_PORT = (1 << 16) - 1;
 const int INVALID_PORT = -1;
 const int MAX_LEN = 1000;
 const std::string INVALID_HOST = "";
+const Socket STDIN = 0;
 
 const int MAX_CLIENTS = 20;
 

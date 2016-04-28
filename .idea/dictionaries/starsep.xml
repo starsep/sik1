@@ -4,6 +4,7 @@
       <w>addrinfo</w>
       <w>epoll</w>
       <w>getaddrinfo</w>
+      <w>stdin</w>
     </words>
   </dictionary>
 </component>

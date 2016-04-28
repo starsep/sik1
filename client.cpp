@@ -50,7 +50,6 @@ int main(int argc, const char **argv) {
   int port = p.second;
   debug() << "Sending to host " << host << " port: " << port << '\n';
   Socket sock = connectClient(host, port);
-  signal(SIGPIPE, SIG_IGN);
   std::string msg;
   while (true) {
     std::getline(std::cin, msg);
