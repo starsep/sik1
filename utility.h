@@ -1,6 +1,8 @@
 #ifndef SIK1_UTILITY_H
 #define SIK1_UTILITY_H
 
+#include "Debug.h"
+
 #include <cstdarg>
 #include <cstdlib>
 #include <cstring>
@@ -15,8 +17,6 @@
 
 #include <string>
 #include <vector>
-
-#include "Debug.h"
 
 using Socket = int;
 using Epoll = int;
@@ -49,7 +49,7 @@ int getPort(const char *cPort);
 
 std::string getHost(const char *cHost);
 
-bool _bind(Socket sockfd, const sockaddr *addr, socklen_t addrlen);
+bool _bind(Socket sock, const sockaddr *addr, socklen_t addrlen);
 
 Debug &debug();
 

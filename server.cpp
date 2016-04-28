@@ -50,6 +50,9 @@ int connectServer(int port) {
 }
 
 void removeClient(std::vector <Socket> &clients, Socket client) {
+  /* Closing the descriptor will make epoll remove it
+   from the set of descriptors which are monitored. */
+  _close(client);
   for (auto it = clients.begin(); it != clients.end(); it++) {
     if (*it == client) {
       clients.erase(it);
@@ -64,11 +67,15 @@ bool checkEpollError(epoll_event &event, std::vector <Socket> &clients) {
     /* An error has occured on this fd, or the socket is not
        ready for reading (why were we notified then?) */
     debug() << "epoll error\n";
-    close(event.data.fd);
     removeClient(clients, event.data.fd);
     return true;
   }
   return false;
+}
+
+void addClient(std::vector <Socket> &clients, Socket client, Epoll efd) {
+  addEpollEvent(efd, client);
+  clients.push_back(client);
 }
 
 bool checkListeningSocket(epoll_event &event, Socket sfd, Epoll efd, std::vector <Socket> &clients) {
@@ -104,8 +111,7 @@ bool checkListeningSocket(epoll_event &event, Socket sfd, Epoll efd, std::vector
       /* Make the incoming socket non-blocking and add it to the
          list of fds to monitor. */
       makeSocketNonBlocking(infd);
-      addEpollEvent(efd, infd);
-      clients.push_back(infd);
+      addClient(clients, infd, efd);
     }
     return true;
   }
@@ -123,9 +129,7 @@ std::string getClientData(epoll_event &event, std::vector <Socket> &clients) {
   bool done = false;
 
   while (true) {
-    ssize_t count;
-
-    count = read(event.data.fd, buffer, MAX_LEN);
+    ssize_t count = read(event.data.fd, buffer, MAX_LEN);
     if (count == -1) {
       /* If errno == EAGAIN, that means we have read all
          data. So go back to the main loop. */
@@ -139,20 +143,13 @@ std::string getClientData(epoll_event &event, std::vector <Socket> &clients) {
       done = true;
       break;
     }
-
-    /* Write the buffer to standard output */
-//    _write(1, buffer, count);
-//    _write(1, "\n", 1);
+    /* add buffer to result */
     buffer[count] = '\0';
     result += buffer;
   }
 
   if (done) {
     debug() << "Closed connection on descriptor " << event.data.fd << '\n';
-
-    /* Closing the descriptor will make epoll remove it
-       from the set of descriptors which are monitored. */
-    close(event.data.fd);
     removeClient(clients, event.data.fd);
   }
   return result;

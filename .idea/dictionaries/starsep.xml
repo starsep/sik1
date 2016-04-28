@@ -3,6 +3,7 @@
     <words>
       <w>addr</w>
       <w>addrinfo</w>
+      <w>addrlen</w>
       <w>epoll</w>
       <w>getaddrinfo</w>
       <w>hbuf</w>
