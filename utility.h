@@ -28,6 +28,7 @@ const int INVALID_PORT = -1;
 const int MAX_LEN = 1000;
 const std::string INVALID_HOST = "";
 const Socket STDIN = 0;
+const Socket STDOUT = 1;
 
 const int MAX_CLIENT_SOCKETS = 2;
 const int MAX_CLIENTS = 20;

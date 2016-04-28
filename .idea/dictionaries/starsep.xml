@@ -10,6 +10,7 @@
       <w>infd</w>
       <w>sbuf</w>
       <w>stdin</w>
+      <w>stdout</w>
     </words>
   </dictionary>
 </component>

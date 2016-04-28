@@ -35,7 +35,7 @@ int connectClient(std::string host, int port) {
 
   // initialize socket according to getaddrinfo results
   Socket sock =
-      _socket(result->ai_family, result->ai_socktype, result->ai_protocol);
+          _socket(result->ai_family, result->ai_socktype, result->ai_protocol);
 
   // connect socket to the server
   _connect(sock, result->ai_addr, result->ai_addrlen);
@@ -46,7 +46,16 @@ int connectClient(std::string host, int port) {
 
 bool checkSocket(epoll_event &event, Socket sock) {
   if (event.data.fd == sock) {
-    debug() << "getting some data\n";
+    char buffer[MAX_LEN];
+    ssize_t count = read(sock, buffer, MAX_LEN);
+    if (count == -1) {
+      perror("read");
+    } else if (count == 0) {
+      perror("server disconnected");
+    } else {
+      buffer[count] = '\0';
+      _write(STDOUT, buffer, count);
+    }
     return true;
   }
   return false;
