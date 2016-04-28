@@ -9,6 +9,7 @@ public:
 };
 
 Debug &operator<<(Debug &debug, const char *s);
+Debug &operator<<(Debug &debug, const std::string &s);
 Debug &operator<<(Debug &debug, std::string &s);
 Debug &operator<<(Debug &debug, char c);
 Debug &operator<<(Debug &debug, int n);

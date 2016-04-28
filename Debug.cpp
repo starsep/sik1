@@ -18,6 +18,13 @@ Debug &operator<<(Debug &debug, std::string &s) {
   return debug;
 }
 
+Debug &operator<<(Debug &debug, const std::string &s) {
+  #ifdef DEBUG
+  std::cerr << s;
+  #endif // DEBUG
+  return debug;
+}
+
 Debug &operator<<(Debug &debug, char c) {
   #ifdef DEBUG
   std::cerr << c;
