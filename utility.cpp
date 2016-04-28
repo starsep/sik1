@@ -22,6 +22,14 @@ static void fatal(const char *fmt, ...) {
   _exit(ExitCode::InvalidArguments);
 }
 
+void setAddrinfo(addrinfo *addr, bool passive) {
+  memset(addr, 0, sizeof(addrinfo));
+  addr->ai_family = AF_INET; // IPv4
+  addr->ai_socktype = SOCK_STREAM;
+  addr->ai_protocol = IPPROTO_TCP;
+  addr->ai_flags |= AI_PASSIVE & passive;
+}
+
 int getPort(const char *cPort) {
   std::string sPort(cPort);
   int port;
@@ -74,4 +82,13 @@ void _close(Socket fd) {
   if (err < 0) {
     syserr("close");
   }
+}
+
+bool _bind(Socket sockfd, const sockaddr *addr, socklen_t addrlen) {
+  return bind(sockfd, addr, addrlen) == 0;
+}
+
+Debug &debug() {
+  static Debug instance{};
+  return instance;
 }

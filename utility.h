@@ -2,7 +2,6 @@
 #define SIK1_UTILITY_H
 
 #include <cstdarg>
-#include <cstdio>
 #include <cstdlib>
 #include <cstring>
 
@@ -12,6 +11,8 @@
 #include <unistd.h>
 
 #include <string>
+
+#include "Debug.h"
 
 using Socket = int;
 
@@ -23,7 +24,9 @@ const std::string INVALID_HOST = "";
 
 const int MAX_CLIENTS = 20;
 
-enum class ExitCode { Ok = 0, InvalidArguments = 1, BadData = 100 };
+enum class ExitCode {
+  Ok = 0, InvalidArguments = 1, BadData = 100
+};
 
 void _connect(Socket, const sockaddr *, socklen_t);
 
@@ -40,5 +43,11 @@ void _write(Socket, const void *, size_t);
 int getPort(const char *cPort);
 
 std::string getHost(const char *cHost);
+
+void setAddrinfo(addrinfo *addr, bool passive = false);
+
+bool _bind(Socket sockfd, const sockaddr *addr, socklen_t addrlen);
+
+Debug &debug();
 
 #endif // SIK1_UTILITY_H
