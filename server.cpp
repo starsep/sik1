@@ -196,8 +196,8 @@ int main(int argc, const char **argv) {
   }
 
   int one = 1;
-  shutdown(sfd, SHUT_RD || SHUT_WR);
-  setsockopt(sfd, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(int));
+  shutdown(sfd, SHUT_RDWR);
+//  setsockopt(sfd, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(int));
   _close(sfd);
   _exit(ExitCode::Ok);
 }
