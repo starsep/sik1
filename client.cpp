@@ -55,6 +55,4 @@ int main(int argc, const char **argv) {
     std::getline(std::cin, msg);
     _write(sock, msg.c_str(), msg.size());
   }
-  _close(sock);
-  _exit(ExitCode::Ok);
 }
