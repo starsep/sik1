@@ -131,8 +131,7 @@ void checkClientData(epoll_event &event) {
   }
 
   if (done) {
-    debug() << "Closed connection on descriptor " << event.data.fd
-    << '\n';
+    debug() << "Closed connection on descriptor " << event.data.fd << '\n';
 
     /* Closing the descriptor will make epoll remove it
        from the set of descriptors which are monitored. */
