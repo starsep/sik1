@@ -6,6 +6,7 @@
 #include <cstdarg>
 #include <cstdlib>
 #include <cstring>
+#include <csignal>
 
 #include <fcntl.h>
 #include <netdb.h>
@@ -13,7 +14,6 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <signal.h>
 
 #include <string>
 #include <vector>

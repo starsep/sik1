@@ -167,7 +167,22 @@ void sendToOthers(const std::vector <Socket> &clients, const Socket sender, cons
   }
 }
 
+void signalHandler(int sig) {
+  debug() << "Caught signal " << sig << ", exiting...\n";
+  _exit(ExitCode::Ok);
+}
+
+void addSignalHandler() {
+  signal(SIGINT, signalHandler);
+  signal(SIGABRT, signalHandler);
+  signal(SIGILL, signalHandler);
+  signal(SIGFPE, signalHandler);
+  signal(SIGTERM, signalHandler);
+  signal(SIGSEGV, signalHandler);
+}
+
 int main(int argc, const char **argv) {
+  addSignalHandler();
   int port = getArguments(argc, argv);
   debug() << "Listening on port: " << port << "\n";
   Socket sfd = connectServer(port);
@@ -175,13 +190,12 @@ int main(int argc, const char **argv) {
   _listen(sfd);
   Epoll efd = _epoll_create();
   addEpollEvent(efd, sfd);
-  epoll_event *events = new epoll_event[MAX_CLIENTS];
 
   std::vector <Socket> clients;
 
   while (true) {
+    epoll_event *events = new epoll_event[MAX_CLIENTS];
     int numberOfEvents = epoll_wait(efd, events, MAX_CLIENTS, -1);
-    //    debug() << numberOfEvents << "\n";
     for (int i = 0; i < numberOfEvents; i++) {
       if (!checkEpollError(events[i], clients) &&
           !checkListeningSocket(events[i], sfd, efd, clients)) {
@@ -191,9 +205,6 @@ int main(int argc, const char **argv) {
         }
       }
     }
+    delete[] events;
   }
-
-  delete[]
-          events;
-  _exit(ExitCode::Ok);
 }
