@@ -84,9 +84,7 @@ bool checkListeningSocket(epoll_event &event, Socket sfd, Epoll efd, std::vector
        means one or more incoming connections. */
     while (true) {
       sockaddr in_addr;
-      socklen_t in_len;
-
-      in_len = sizeof in_addr;
+      socklen_t in_len = sizeof in_addr;
       Socket infd = accept(sfd, &in_addr, &in_len);
       if (infd == -1) {
         if ((errno == EAGAIN) || (errno == EWOULDBLOCK)) {
