@@ -157,6 +157,7 @@ std::string getClientData(epoll_event &event, std::vector <Socket> &clients) {
 
 void sendTo(const Socket to, const std::string &msg) {
   debug() << "Sending " << msg << " to " << to << '\n';
+  _write(to, msg.c_str(), msg.size());
 }
 
 void sendToOthers(const std::vector <Socket> &clients, const Socket sender, const std::string &msg) {
