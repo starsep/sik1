@@ -195,6 +195,8 @@ int main(int argc, const char **argv) {
     delete[] events;
   }
 
+  int one = 1;
+  setsockopt(sfd, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(int));
   _close(sfd);
   _exit(ExitCode::Ok);
 }
