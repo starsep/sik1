@@ -25,9 +25,7 @@ int connectServer(int port) {
   addrinfo hints;
   addrinfo *result;
 
-  setAddrinfo(&hints, true);
-
-  _getaddrinfo(nullptr, std::to_string(port).c_str(), &hints, &result);
+  _getaddrinfo(nullptr, std::to_string(port).c_str(), &hints, &result, true);
 
   int sfd;
   addrinfo *rp;
@@ -60,12 +58,14 @@ int main(int argc, const char **argv) {
   Epoll efd = _epoll_create();
   addEpollEvent(efd, sfd);
   epoll_event *events = new epoll_event[MAX_CLIENTS];
+
+  char buffer[MAX_LEN];
+
   while (true) {
     int numberOfEvents = epoll_wait(efd, events, MAX_CLIENTS, -1);
     debug() << numberOfEvents << "\n";
     for (int i = 0; i < numberOfEvents; i++) {
-      if ((events[i].events & EPOLLERR) ||
-          (events[i].events & EPOLLHUP) ||
+      if ((events[i].events & EPOLLERR) || (events[i].events & EPOLLHUP) ||
           (!(events[i].events & EPOLLIN))) {
         /* An error has occured on this fd, or the socket is not
            ready for reading (why were we notified then?) */
@@ -85,25 +85,20 @@ int main(int argc, const char **argv) {
           in_len = sizeof in_addr;
           Socket infd = accept(sfd, &in_addr, &in_len);
           if (infd == -1) {
-            if ((errno == EAGAIN) ||
-                (errno == EWOULDBLOCK)) {
+            if ((errno == EAGAIN) || (errno == EWOULDBLOCK)) {
               /* We have processed all incoming
                  connections. */
               break;
-            }
-            else {
+            } else {
               perror("accept");
               break;
             }
           }
 
-          int s = getnameinfo(&in_addr, in_len,
-                              hbuf, sizeof hbuf,
-                              sbuf, sizeof sbuf,
-                              NI_NUMERICHOST | NI_NUMERICSERV);
+          int s = getnameinfo(&in_addr, in_len, hbuf, sizeof hbuf, sbuf,
+                              sizeof sbuf, NI_NUMERICHOST | NI_NUMERICSERV);
           if (s == 0) {
-            printf("Accepted connection on descriptor %d "
-                           "(host=%s, port=%s)\n", infd, hbuf, sbuf);
+            debug() << "Accepted connection on descriptor " << infd << " (host=" << hbuf << ", port=" << sbuf << ")\n";
           }
 
           /* Make the incoming socket non-blocking and add it to the
@@ -112,8 +107,7 @@ int main(int argc, const char **argv) {
           addEpollEvent(efd, infd);
         }
         continue;
-      }
-      else {
+      } else {
         /* We have data on the fd waiting to be read. Read and
            display it. We must read whatever data is available
            completely, as we are running in edge-triggered mode
@@ -123,9 +117,8 @@ int main(int argc, const char **argv) {
 
         while (true) {
           ssize_t count;
-          char buf[512];
 
-          count = read(events[i].data.fd, buf, sizeof buf);
+          count = read(events[i].data.fd, buffer, MAX_LEN);
           if (count == -1) {
             /* If errno == EAGAIN, that means we have read all
                data. So go back to the main loop. */
@@ -133,8 +126,7 @@ int main(int argc, const char **argv) {
               perror("read");
             }
             break;
-          }
-          else if (count == 0) {
+          } else if (count == 0) {
             /* End of file. The remote has closed the
                connection. */
             done = true;
@@ -142,12 +134,12 @@ int main(int argc, const char **argv) {
           }
 
           /* Write the buffer to standard output */
-          _write(1, buf, count);
+          _write(1, buffer, count);
         }
 
         if (done) {
-          printf("Closed connection on descriptor %d\n",
-                 events[i].data.fd);
+          debug() << "Closed connection on descriptor " << events[i].data.fd
+                  << '\n';
 
           /* Closing the descriptor will make epoll remove it
              from the set of descriptors which are monitored. */

@@ -22,7 +22,7 @@ static void fatal(const char *fmt, ...) {
   _exit(ExitCode::InvalidArguments);
 }
 
-void setAddrinfo(addrinfo *addr, bool passive) {
+static void setAddrinfo(addrinfo *addr, bool passive) {
   memset(addr, 0, sizeof(addrinfo));
   addr->ai_family = AF_INET; // IPv4
   addr->ai_socktype = SOCK_STREAM;
@@ -52,8 +52,9 @@ void _connect(Socket sockfd, const sockaddr *addr, socklen_t addrlen) {
 
 void _exit(ExitCode code) { exit(static_cast<int>(code)); }
 
-void _getaddrinfo(const char *node, const char *service, const addrinfo *hints,
-                  addrinfo **res) {
+void _getaddrinfo(const char *node, const char *service, addrinfo *hints,
+                  addrinfo **res, bool passive) {
+  setAddrinfo(hints, passive);
   int err = getaddrinfo(node, service, hints, res);
   if (err == EAI_SYSTEM) { // system error
     syserr("getaddrinfo: %s", gai_strerror(err));

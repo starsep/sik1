@@ -31,7 +31,6 @@ int connectClient(std::string host, int port) {
   addrinfo *result;
 
   // 'converting' host/port in string to struct addrinfo
-  setAddrinfo(&hints);
   _getaddrinfo(host.c_str(), std::to_string(port).c_str(), &hints, &result);
 
   // initialize socket according to getaddrinfo results
@@ -51,12 +50,11 @@ int main(int argc, const char **argv) {
   int port = p.second;
   debug() << "Sending to host " << host << " port: " << port << '\n';
   Socket sock = connectClient(host, port);
-  const char *msg = "client1#############\n";
   signal(SIGPIPE, SIG_IGN);
+  std::string msg;
   while (true) {
-    size_t len = strlen(msg);
-    _write(sock, msg, len);
-    sleep(1);
+    std::getline(std::cin, msg);
+    _write(sock, msg.c_str(), msg.size());
   }
   _close(sock);
   _exit(ExitCode::Ok);

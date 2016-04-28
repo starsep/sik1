@@ -24,6 +24,7 @@ const int DEFAULT_PORT = 20160;
 const int MIN_PORT = 1;
 const int MAX_PORT = (1 << 16) - 1;
 const int INVALID_PORT = -1;
+const int MAX_LEN = 1000;
 const std::string INVALID_HOST = "";
 
 const int MAX_CLIENTS = 20;
@@ -34,7 +35,7 @@ void _connect(Socket, const sockaddr *, socklen_t);
 
 void _exit(ExitCode code);
 
-void _getaddrinfo(const char *, const char *, const addrinfo *, addrinfo **);
+void _getaddrinfo(const char *, const char *, addrinfo *, addrinfo **, bool passive = false);
 
 Socket _socket(int, int, int);
 
@@ -45,8 +46,6 @@ void _write(Socket, const void *, size_t);
 int getPort(const char *cPort);
 
 std::string getHost(const char *cHost);
-
-void setAddrinfo(addrinfo *addr, bool passive = false);
 
 bool _bind(Socket sockfd, const sockaddr *addr, socklen_t addrlen);
 
