@@ -92,3 +92,43 @@ Debug &debug() {
   static Debug instance{};
   return instance;
 }
+
+void makeSocketNonBlocking(Socket sfd) {
+  int flags, s;
+
+  flags = fcntl(sfd, F_GETFL, 0);
+  if (flags == -1) {
+    perror("fcntl");
+  }
+
+  flags |= O_NONBLOCK;
+  s = fcntl(sfd, F_SETFL, flags);
+  if (s == -1) {
+    perror("fcntl");
+  }
+}
+
+void _listen(Socket sfd) {
+  if (listen(sfd, SOMAXCONN)) {
+    perror("listen");
+  }
+}
+
+Epoll _epoll_create() {
+  Epoll efd = epoll_create1(0);
+  if (efd == -1) {
+    perror("epoll_create");
+    abort();
+  }
+  return efd;
+}
+
+void addEpollEvent(Epoll efd, Socket sfd) {
+  epoll_event event;
+  event.data.fd = sfd;
+  event.events = EPOLLIN | EPOLLET;
+  if (epoll_ctl(efd, EPOLL_CTL_ADD, sfd, &event) == -1) {
+    perror("epoll_ctl");
+    abort();
+  }
+}
