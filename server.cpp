@@ -49,7 +49,7 @@ int connectServer(int port) {
   return sock;
 }
 
-void removeClient(std::vector <Socket> &clients, Socket client) {
+void removeClient(std::vector<Socket> &clients, Socket client) {
   /* Closing the descriptor will make epoll remove it
    from the set of descriptors which are monitored. */
   _close(client);
@@ -61,7 +61,7 @@ void removeClient(std::vector <Socket> &clients, Socket client) {
   }
 }
 
-bool checkEpollError(epoll_event &event, std::vector <Socket> &clients) {
+bool checkEpollError(epoll_event &event, std::vector<Socket> &clients) {
   if ((event.events & EPOLLERR) || (event.events & EPOLLHUP) ||
       (!(event.events & EPOLLIN))) {
     /* An error has occured on this fd, or the socket is not
@@ -73,20 +73,30 @@ bool checkEpollError(epoll_event &event, std::vector <Socket> &clients) {
   return false;
 }
 
-void addClient(std::vector <Socket> &clients, Socket client, Epoll efd) {
+void addClient(std::vector<Socket> &clients, Socket client, Epoll efd) {
   addEpollEvent(efd, client);
   clients.push_back(client);
 }
 
-bool checkListeningSocket(epoll_event &event, Socket sock, Epoll efd, std::vector <Socket> &clients) {
+void newConnectionDebug(Socket client, sockaddr in_addr, socklen_t in_len) {
+  char hbuf[NI_MAXHOST], sbuf[NI_MAXSERV];
+  if (getnameinfo(&in_addr, in_len, hbuf, sizeof hbuf, sbuf, sizeof sbuf,
+                  NI_NUMERICHOST | NI_NUMERICSERV) == 0) {
+    debug() << "Connection with " << client << " (host=" << hbuf
+            << ", port=" << sbuf << ")\n";
+  }
+}
+
+bool checkListeningSocket(epoll_event &event, Socket sock, Epoll efd,
+                          std::vector<Socket> &clients) {
   if (sock == event.data.fd) {
     /* We have a notification on the listening socket, which
        means one or more incoming connections. */
     while (true) {
       sockaddr in_addr;
       socklen_t in_len = sizeof in_addr;
-      Socket infd = accept(sock, &in_addr, &in_len);
-      if (infd == -1) {
+      Socket client = accept(sock, &in_addr, &in_len);
+      if (client == -1) {
         if ((errno == EAGAIN) || (errno == EWOULDBLOCK)) {
           /* We have processed all incoming
              connections. */
@@ -97,33 +107,21 @@ bool checkListeningSocket(epoll_event &event, Socket sock, Epoll efd, std::vecto
         }
       }
 
-      {
-        char hbuf[NI_MAXHOST], sbuf[NI_MAXSERV];
-        if (getnameinfo(&in_addr, in_len, hbuf, sizeof hbuf, sbuf,
-                        sizeof sbuf, NI_NUMERICHOST | NI_NUMERICSERV) == 0) {
-          debug() << "Accepted connection on descriptor " << infd
-          << " (host=" << hbuf << ", port=" << sbuf << ")\n";
-        }
-      }
+      newConnectionDebug(sock, in_addr, in_len);
 
       /* Make the incoming socket non-blocking and add it to the
          list of fds to monitor. */
-      makeSocketNonBlocking(infd);
-      addClient(clients, infd, efd);
+      makeSocketNonBlocking(client);
+      addClient(clients, client, efd);
     }
     return true;
   }
   return false;
 }
 
-std::string getClientData(epoll_event &event, std::vector <Socket> &clients) {
+std::string getClientData(epoll_event &event, std::vector<Socket> &clients) {
   std::string result;
   char buffer[MAX_LEN];
-  /* We have data on the fd waiting to be read. Read and
-     display it. We must read whatever data is available
-     completely, as we are running in edge-triggered mode
-     and won't get a notification again for the same
-     data. */
   bool done = false;
 
   while (true) {
@@ -136,13 +134,12 @@ std::string getClientData(epoll_event &event, std::vector <Socket> &clients) {
       done = true;
       break;
     }
-    /* add buffer to result */
     buffer[count] = '\0';
     result += buffer;
   }
 
   if (done) {
-    debug() << "Closed connection on descriptor " << event.data.fd << '\n';
+    debug() << "Closed connection with " << event.data.fd << '\n';
     removeClient(clients, event.data.fd);
   }
   return result;
@@ -153,7 +150,8 @@ void sendTo(const Socket to, const std::string &msg) {
   _write(to, msg.c_str(), msg.size());
 }
 
-void sendToOthers(const std::vector <Socket> &clients, const Socket sender, const std::string &msg) {
+void sendToOthers(const std::vector<Socket> &clients, const Socket sender,
+                  const std::string &msg) {
   for (Socket s : clients) {
     if (s != sender) {
       sendTo(s, msg);
@@ -161,17 +159,14 @@ void sendToOthers(const std::vector <Socket> &clients, const Socket sender, cons
   }
 }
 
-
 static bool finished = false;
 
-void signalCtrlC(int sig) {
-  finished = true;
-}
+void signalCtrlC(int sig) { finished = true; }
 
 void cleanup(Socket sock) {
   shutdown(sock, SHUT_RDWR);
-//  int one = 1;
-//  setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(int));
+  //  int one = 1;
+  //  setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(int));
   _close(sock);
   _exit(ExitCode::Ok);
 }
@@ -186,7 +181,7 @@ int main(int argc, const char **argv) {
   Epoll efd = _epoll_create();
   addEpollEvent(efd, sock);
 
-  std::vector <Socket> clients;
+  std::vector<Socket> clients;
 
   while (!finished) {
     epoll_event *events = new epoll_event[MAX_CLIENTS];
