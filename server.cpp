@@ -49,26 +49,35 @@ int connectServer(int port) {
   return sfd;
 }
 
-bool checkEpollError(epoll_event &event) {
+void removeClient(std::vector <Socket> &clients, Socket client) {
+  for (auto it = clients.begin(); it != clients.end(); it++) {
+    if (*it == client) {
+      clients.erase(it);
+      return;
+    }
+  }
+}
+
+bool checkEpollError(epoll_event &event, std::vector <Socket> &clients) {
   if ((event.events & EPOLLERR) || (event.events & EPOLLHUP) ||
       (!(event.events & EPOLLIN))) {
     /* An error has occured on this fd, or the socket is not
        ready for reading (why were we notified then?) */
     debug() << "epoll error\n";
     close(event.data.fd);
+    removeClient(clients, event.data.fd);
     return true;
   }
   return false;
 }
 
-bool checkListeningSocket(epoll_event &event, Socket sfd, Epoll efd) {
+bool checkListeningSocket(epoll_event &event, Socket sfd, Epoll efd, std::vector <Socket> &clients) {
   if (sfd == event.data.fd) {
     /* We have a notification on the listening socket, which
        means one or more incoming connections. */
     while (true) {
       sockaddr in_addr;
       socklen_t in_len;
-      char hbuf[NI_MAXHOST], sbuf[NI_MAXSERV];
 
       in_len = sizeof in_addr;
       Socket infd = accept(sfd, &in_addr, &in_len);
@@ -83,23 +92,28 @@ bool checkListeningSocket(epoll_event &event, Socket sfd, Epoll efd) {
         }
       }
 
-      int s = getnameinfo(&in_addr, in_len, hbuf, sizeof hbuf, sbuf,
-                          sizeof sbuf, NI_NUMERICHOST | NI_NUMERICSERV);
-      if (s == 0) {
-        debug() << "Accepted connection on descriptor " << infd << " (host=" << hbuf << ", port=" << sbuf << ")\n";
+      {
+        char hbuf[NI_MAXHOST], sbuf[NI_MAXSERV];
+        if (getnameinfo(&in_addr, in_len, hbuf, sizeof hbuf, sbuf,
+                        sizeof sbuf, NI_NUMERICHOST | NI_NUMERICSERV) == 0) {
+          debug() << "Accepted connection on descriptor " << infd
+          << " (host=" << hbuf << ", port=" << sbuf << ")\n";
+        }
       }
 
       /* Make the incoming socket non-blocking and add it to the
          list of fds to monitor. */
       makeSocketNonBlocking(infd);
       addEpollEvent(efd, infd);
+      clients.push_back(infd);
     }
     return true;
   }
   return false;
 }
 
-void checkClientData(epoll_event &event) {
+std::string getClientData(epoll_event &event, std::vector <Socket> &clients) {
+  std::string result;
   char buffer[MAX_LEN];
   /* We have data on the fd waiting to be read. Read and
      display it. We must read whatever data is available
@@ -137,6 +151,20 @@ void checkClientData(epoll_event &event) {
     /* Closing the descriptor will make epoll remove it
        from the set of descriptors which are monitored. */
     close(event.data.fd);
+    removeClient(clients, event.data.fd);
+  }
+  return result;
+}
+
+void sendTo(const Socket to, const std::string &msg) {
+  debug() << "Sending " << msg << " to " << to << '\n';
+}
+
+void sendToOthers(const std::vector <Socket> &clients, const Socket sender, const std::string &msg) {
+  for (Socket s : clients) {
+    if (s != sender) {
+      sendTo(s, msg);
+    }
   }
 }
 
@@ -150,17 +178,20 @@ int main(int argc, const char **argv) {
   addEpollEvent(efd, sfd);
   epoll_event *events = new epoll_event[MAX_CLIENTS];
 
+  std::vector <Socket> clients;
+
   while (true) {
     int numberOfEvents = epoll_wait(efd, events, MAX_CLIENTS, -1);
-//    debug() << numberOfEvents << "\n";
+    //    debug() << numberOfEvents << "\n";
     for (int i = 0; i < numberOfEvents; i++) {
-      if (!checkEpollError(events[i]) && !checkListeningSocket(events[i], sfd, efd)) {
-        checkClientData(events[i]);
+      if (!checkEpollError(events[i], clients) &&
+          !checkListeningSocket(events[i], sfd, efd, clients)) {
+        std::string result = getClientData(events[i], clients);
+        sendToOthers(clients, events[i].data.fd, result);
       }
     }
   }
 
-  delete[]
-          events;
+  delete[] events;
   _exit(ExitCode::Ok);
 }

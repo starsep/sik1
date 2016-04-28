@@ -14,6 +14,7 @@
 #include <signal.h>
 
 #include <string>
+#include <vector>
 
 #include "Debug.h"
 

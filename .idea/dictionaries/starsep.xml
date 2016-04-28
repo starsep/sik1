@@ -1,9 +1,13 @@
 <component name="ProjectDictionaryState">
   <dictionary name="starsep">
     <words>
+      <w>addr</w>
       <w>addrinfo</w>
       <w>epoll</w>
       <w>getaddrinfo</w>
+      <w>hbuf</w>
+      <w>infd</w>
+      <w>sbuf</w>
       <w>stdin</w>
     </words>
   </dictionary>
