@@ -3,17 +3,8 @@
 
 #include "Debug.h"
 
-#include <cstdarg>
-#include <cstdlib>
-#include <cstring>
-#include <csignal>
-
-#include <fcntl.h>
 #include <netdb.h>
 #include <sys/epoll.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <unistd.h>
 
 #include <string>
 #include <vector>
@@ -62,5 +53,9 @@ void _listen(Socket sfd);
 Epoll _epoll_create();
 
 void addEpollEvent(Epoll efd, Socket sfd);
+
+void _signal(void (*)(int));
+
+ssize_t _read(Socket, void *, size_t);
 
 #endif // SIK1_UTILITY_H

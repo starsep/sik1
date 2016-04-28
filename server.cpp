@@ -127,17 +127,12 @@ std::string getClientData(epoll_event &event, std::vector <Socket> &clients) {
   bool done = false;
 
   while (true) {
-    ssize_t count = read(event.data.fd, buffer, MAX_LEN);
-    if (count == -1) {
-      /* If errno == EAGAIN, that means we have read all
-         data. So go back to the main loop. */
-      if (errno != EAGAIN) {
-        perror("read");
-      }
+    ssize_t count = _read(event.data.fd, buffer, MAX_LEN);
+    if (count == -1 && errno == EAGAIN) {
       break;
-    } else if (count == 0) {
-      /* End of file. The remote has closed the
-         connection. */
+    }
+    if (count == 0) {
+      /* EOF, end of connection */
       done = true;
       break;
     }
@@ -166,7 +161,15 @@ void sendToOthers(const std::vector <Socket> &clients, const Socket sender, cons
   }
 }
 
+
+static bool finished = false;
+
+void signalCtrlC(int sig) {
+  finished = true;
+}
+
 int main(int argc, const char **argv) {
+  _signal(signalCtrlC);
   int port = getArguments(argc, argv);
   debug() << "Listening on port: " << port << "\n";
   Socket sfd = connectServer(port);
@@ -177,7 +180,7 @@ int main(int argc, const char **argv) {
 
   std::vector <Socket> clients;
 
-  while (true) {
+  while (!finished) {
     epoll_event *events = new epoll_event[MAX_CLIENTS];
     int numberOfEvents = epoll_wait(efd, events, MAX_CLIENTS, -1);
     for (int i = 0; i < numberOfEvents; i++) {
@@ -191,4 +194,7 @@ int main(int argc, const char **argv) {
     }
     delete[] events;
   }
+
+  _close(sfd);
+  _exit(ExitCode::Ok);
 }

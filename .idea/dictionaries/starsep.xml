@@ -9,6 +9,7 @@
       <w>hbuf</w>
       <w>infd</w>
       <w>sbuf</w>
+      <w>signum</w>
       <w>stdin</w>
       <w>stdout</w>
     </words>

@@ -47,10 +47,8 @@ int connectClient(std::string host, int port) {
 bool checkSocket(epoll_event &event, Socket sock) {
   if (event.data.fd == sock) {
     char buffer[MAX_LEN];
-    ssize_t count = read(sock, buffer, MAX_LEN);
-    if (count == -1) {
-      perror("read");
-    } else if (count == 0) {
+    ssize_t count = _read(sock, buffer, MAX_LEN);
+    if (count == 0) {
       perror("server disconnected");
     } else {
       buffer[count] = '\0';

@@ -1,4 +1,13 @@
 #include "utility.h"
+#include <cstdarg>
+#include <cstdlib>
+#include <cstring>
+#include <csignal>
+
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/socket.h>
+#include <sys/types.h>
 
 static void syserr(const char *fmt, ...) {
   va_list fmt_args;
@@ -132,4 +141,18 @@ void addEpollEvent(Epoll efd, Socket sfd) {
     perror("epoll_ctl");
     abort();
   }
+}
+
+void _signal(sighandler_t sighandler) {
+  if (signal(SIGINT, sighandler)) {
+    perror("signal");
+  }
+}
+
+ssize_t _read(Socket sock, void *buffer, size_t maxCount) {
+  ssize_t count = read(sock, buffer, maxCount);
+  if (count == -1 && errno != EAGAIN) {
+    perror("read");
+  }
+  return count;
 }
