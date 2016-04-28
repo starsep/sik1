@@ -99,6 +99,47 @@ bool checkListeningSocket(epoll_event &event, Socket sfd, Epoll efd) {
   return false;
 }
 
+void checkClientData(epoll_event &event) {
+  char buffer[MAX_LEN];
+  /* We have data on the fd waiting to be read. Read and
+     display it. We must read whatever data is available
+     completely, as we are running in edge-triggered mode
+     and won't get a notification again for the same
+     data. */
+  bool done = false;
+
+  while (true) {
+    ssize_t count;
+
+    count = read(event.data.fd, buffer, MAX_LEN);
+    if (count == -1) {
+      /* If errno == EAGAIN, that means we have read all
+         data. So go back to the main loop. */
+      if (errno != EAGAIN) {
+        perror("read");
+      }
+      break;
+    } else if (count == 0) {
+      /* End of file. The remote has closed the
+         connection. */
+      done = true;
+      break;
+    }
+
+    /* Write the buffer to standard output */
+    _write(1, buffer, count);
+  }
+
+  if (done) {
+    debug() << "Closed connection on descriptor " << event.data.fd
+    << '\n';
+
+    /* Closing the descriptor will make epoll remove it
+       from the set of descriptors which are monitored. */
+    close(event.data.fd);
+  }
+}
+
 int main(int argc, const char **argv) {
   int port = getArguments(argc, argv);
   debug() << "Listening on port: " << port << "\n";
@@ -109,56 +150,12 @@ int main(int argc, const char **argv) {
   addEpollEvent(efd, sfd);
   epoll_event *events = new epoll_event[MAX_CLIENTS];
 
-  char buffer[MAX_LEN];
-
   while (true) {
     int numberOfEvents = epoll_wait(efd, events, MAX_CLIENTS, -1);
-    debug() << numberOfEvents << "\n";
+//    debug() << numberOfEvents << "\n";
     for (int i = 0; i < numberOfEvents; i++) {
-      if (checkEpollError(events[i])) {
-        continue;
-      }
-
-      if (checkListeningSocket(events[i], sfd, efd)) {
-        continue;
-      } else {
-        /* We have data on the fd waiting to be read. Read and
-           display it. We must read whatever data is available
-           completely, as we are running in edge-triggered mode
-           and won't get a notification again for the same
-           data. */
-        bool done = false;
-
-        while (true) {
-          ssize_t count;
-
-          count = read(events[i].data.fd, buffer, MAX_LEN);
-          if (count == -1) {
-            /* If errno == EAGAIN, that means we have read all
-               data. So go back to the main loop. */
-            if (errno != EAGAIN) {
-              perror("read");
-            }
-            break;
-          } else if (count == 0) {
-            /* End of file. The remote has closed the
-               connection. */
-            done = true;
-            break;
-          }
-
-          /* Write the buffer to standard output */
-          _write(1, buffer, count);
-        }
-
-        if (done) {
-          debug() << "Closed connection on descriptor " << events[i].data.fd
-          << '\n';
-
-          /* Closing the descriptor will make epoll remove it
-             from the set of descriptors which are monitored. */
-          close(events[i].data.fd);
-        }
+      if (!checkEpollError(events[i]) && !checkListeningSocket(events[i], sfd, efd)) {
+        checkClientData(events[i]);
       }
     }
   }
