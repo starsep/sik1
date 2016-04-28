@@ -143,6 +143,7 @@ std::string getClientData(epoll_event &event, std::vector <Socket> &clients) {
     /* Write the buffer to standard output */
 //    _write(1, buffer, count);
 //    _write(1, "\n", 1);
+    buffer[count] = '\0';
     result += buffer;
   }
 
