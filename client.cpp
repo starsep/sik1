@@ -44,15 +44,38 @@ int connectClient(std::string host, int port) {
   return sock;
 }
 
+bool checkSocket(epoll_event &event, Socket sock) {
+  if (event.data.fd == sock) {
+    debug() << "getting some data\n";
+    return true;
+  }
+  return false;
+}
+
+void checkStdin(Socket sock) {
+  std::string msg;
+  std::getline(std::cin, msg);
+  _write(sock, msg.c_str(), msg.size());
+}
+
 int main(int argc, const char **argv) {
   std::pair<std::string, int> p = get_arguments(argc, argv);
   std::string host = p.first;
   int port = p.second;
   debug() << "Sending to host " << host << " port: " << port << '\n';
   Socket sock = connectClient(host, port);
-  std::string msg;
+  Epoll efd = _epoll_create();
+  addEpollEvent(efd, sock);
+  addEpollEvent(efd, STDIN);
+
   while (true) {
-    std::getline(std::cin, msg);
-    _write(sock, msg.c_str(), msg.size());
+    epoll_event *events = new epoll_event[MAX_CLIENT_SOCKETS];
+    int numberOfEvents = epoll_wait(efd, events, MAX_CLIENT_SOCKETS, -1);
+    for (int i = 0; i < numberOfEvents; i++) {
+      if (!checkSocket(events[i], sock)) {
+        checkStdin(sock);
+      }
+    }
+    delete[] events;
   }
 }
