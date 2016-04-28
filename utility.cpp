@@ -1,13 +1,13 @@
 #include "utility.h"
+#include <csignal>
 #include <cstdarg>
 #include <cstdlib>
 #include <cstring>
-#include <csignal>
 
 #include <fcntl.h>
-#include <unistd.h>
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <unistd.h>
 
 static void syserr(const char *fmt, ...) {
   va_list fmt_args;
@@ -155,4 +155,12 @@ ssize_t _read(Socket sock, void *buffer, size_t maxCount) {
     perror("read");
   }
   return count;
+}
+
+Socket _accept(Socket sock, sockaddr *addr, socklen_t *addrlen) {
+  Socket result = accept(sock, addr, addrlen);
+  if (!((errno == EAGAIN) || (errno == EWOULDBLOCK))) {
+    perror("accept");
+  }
+  return result;
 }

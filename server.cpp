@@ -46,6 +46,8 @@ int connectServer(int port) {
 
   freeaddrinfo(result);
 
+  makeSocketNonBlocking(sock);
+  _listen(sock);
   return sock;
 }
 
@@ -95,16 +97,9 @@ bool checkListeningSocket(epoll_event &event, Socket sock, Epoll efd,
     while (true) {
       sockaddr in_addr;
       socklen_t in_len = sizeof in_addr;
-      Socket client = accept(sock, &in_addr, &in_len);
+      Socket client = _accept(sock, &in_addr, &in_len);
       if (client == -1) {
-        if ((errno == EAGAIN) || (errno == EWOULDBLOCK)) {
-          /* We have processed all incoming
-             connections. */
-          break;
-        } else {
-          perror("accept");
-          break;
-        }
+        break;
       }
 
       newConnectionDebug(sock, in_addr, in_len);
@@ -176,8 +171,6 @@ int main(int argc, const char **argv) {
   int port = getArguments(argc, argv);
   debug() << "Listening on port: " << port << "\n";
   Socket sock = connectServer(port);
-  makeSocketNonBlocking(sock);
-  _listen(sock);
   Epoll efd = _epoll_create();
   addEpollEvent(efd, sock);
 

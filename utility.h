@@ -58,4 +58,6 @@ void _signal(void (*)(int));
 
 ssize_t _read(Socket, void *, size_t);
 
+Socket _accept(Socket, sockaddr *, socklen_t *);
+
 #endif // SIK1_UTILITY_H
