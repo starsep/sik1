@@ -27,16 +27,16 @@ int connectServer(int port) {
 
   _getaddrinfo(nullptr, std::to_string(port).c_str(), &hints, &result, true);
 
-  int sfd;
+  int sock;
   addrinfo *rp;
   for (rp = result; rp != nullptr; rp = rp->ai_next) {
-    sfd = _socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
+    sock = _socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
 
-    if (_bind(sfd, rp->ai_addr, rp->ai_addrlen)) {
+    if (_bind(sock, rp->ai_addr, rp->ai_addrlen)) {
       break;
     }
 
-    _close(sfd);
+    _close(sock);
   }
 
   if (rp == nullptr) {
@@ -46,7 +46,7 @@ int connectServer(int port) {
 
   freeaddrinfo(result);
 
-  return sfd;
+  return sock;
 }
 
 void removeClient(std::vector <Socket> &clients, Socket client) {
@@ -78,14 +78,14 @@ void addClient(std::vector <Socket> &clients, Socket client, Epoll efd) {
   clients.push_back(client);
 }
 
-bool checkListeningSocket(epoll_event &event, Socket sfd, Epoll efd, std::vector <Socket> &clients) {
-  if (sfd == event.data.fd) {
+bool checkListeningSocket(epoll_event &event, Socket sock, Epoll efd, std::vector <Socket> &clients) {
+  if (sock == event.data.fd) {
     /* We have a notification on the listening socket, which
        means one or more incoming connections. */
     while (true) {
       sockaddr in_addr;
       socklen_t in_len = sizeof in_addr;
-      Socket infd = accept(sfd, &in_addr, &in_len);
+      Socket infd = accept(sock, &in_addr, &in_len);
       if (infd == -1) {
         if ((errno == EAGAIN) || (errno == EWOULDBLOCK)) {
           /* We have processed all incoming
@@ -168,15 +168,23 @@ void signalCtrlC(int sig) {
   finished = true;
 }
 
+void cleanup(Socket sock) {
+  shutdown(sock, SHUT_RDWR);
+//  int one = 1;
+//  setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(int));
+  _close(sock);
+  _exit(ExitCode::Ok);
+}
+
 int main(int argc, const char **argv) {
   _signal(signalCtrlC);
   int port = getArguments(argc, argv);
   debug() << "Listening on port: " << port << "\n";
-  Socket sfd = connectServer(port);
-  makeSocketNonBlocking(sfd);
-  _listen(sfd);
+  Socket sock = connectServer(port);
+  makeSocketNonBlocking(sock);
+  _listen(sock);
   Epoll efd = _epoll_create();
-  addEpollEvent(efd, sfd);
+  addEpollEvent(efd, sock);
 
   std::vector <Socket> clients;
 
@@ -185,7 +193,7 @@ int main(int argc, const char **argv) {
     int numberOfEvents = epoll_wait(efd, events, MAX_CLIENTS, -1);
     for (int i = 0; i < numberOfEvents; i++) {
       if (!checkEpollError(events[i], clients) &&
-          !checkListeningSocket(events[i], sfd, efd, clients)) {
+          !checkListeningSocket(events[i], sock, efd, clients)) {
         std::string result = getClientData(events[i], clients);
         if (result.size() > 0) {
           sendToOthers(clients, events[i].data.fd, result);
@@ -194,10 +202,5 @@ int main(int argc, const char **argv) {
     }
     delete[] events;
   }
-
-  int one = 1;
-  shutdown(sfd, SHUT_RDWR);
-//  setsockopt(sfd, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(int));
-  _close(sfd);
-  _exit(ExitCode::Ok);
+  cleanup(sock);
 }

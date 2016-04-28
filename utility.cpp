@@ -103,23 +103,23 @@ Debug &debug() {
   return instance;
 }
 
-void makeSocketNonBlocking(Socket sfd) {
+void makeSocketNonBlocking(Socket sock) {
   int flags, s;
 
-  flags = fcntl(sfd, F_GETFL, 0);
+  flags = fcntl(sock, F_GETFL, 0);
   if (flags == -1) {
     perror("fcntl");
   }
 
   flags |= O_NONBLOCK;
-  s = fcntl(sfd, F_SETFL, flags);
+  s = fcntl(sock, F_SETFL, flags);
   if (s == -1) {
     perror("fcntl");
   }
 }
 
-void _listen(Socket sfd) {
-  if (listen(sfd, SOMAXCONN)) {
+void _listen(Socket sock) {
+  if (listen(sock, SOMAXCONN)) {
     perror("listen");
   }
 }
@@ -133,11 +133,11 @@ Epoll _epoll_create() {
   return efd;
 }
 
-void addEpollEvent(Epoll efd, Socket sfd) {
+void addEpollEvent(Epoll efd, Socket sock) {
   epoll_event event;
-  event.data.fd = sfd;
+  event.data.fd = sock;
   event.events = EPOLLIN | EPOLLET;
-  if (epoll_ctl(efd, EPOLL_CTL_ADD, sfd, &event) == -1) {
+  if (epoll_ctl(efd, EPOLL_CTL_ADD, sock, &event) == -1) {
     perror("epoll_ctl");
     abort();
   }

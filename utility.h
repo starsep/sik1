@@ -28,7 +28,7 @@ enum class ExitCode { Ok = 0, InvalidArguments = 1, BadData = 100 };
 
 void _connect(Socket, const sockaddr *, socklen_t);
 
-void _exit(ExitCode code);
+void _exit(ExitCode);
 
 void _getaddrinfo(const char *, const char *, addrinfo *, addrinfo **, bool passive = false);
 
@@ -38,21 +38,21 @@ void _close(Socket);
 
 void _write(Socket, const void *, size_t);
 
-int getPort(const char *cPort);
+int getPort(const char *);
 
-std::string getHost(const char *cHost);
+std::string getHost(const char *);
 
-bool _bind(Socket sock, const sockaddr *addr, socklen_t addrlen);
+bool _bind(Socket, const sockaddr *, socklen_t);
 
 Debug &debug();
 
-void makeSocketNonBlocking(Socket sfd);
+void makeSocketNonBlocking(Socket);
 
-void _listen(Socket sfd);
+void _listen(Socket);
 
 Epoll _epoll_create();
 
-void addEpollEvent(Epoll efd, Socket sfd);
+void addEpollEvent(Epoll efd, Socket);
 
 void _signal(void (*)(int));
 
