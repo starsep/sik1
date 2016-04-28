@@ -64,11 +64,12 @@ int main(int argc, const char **argv) {
     int numberOfEvents = epoll_wait(efd, events, MAX_CLIENTS, -1);
     debug() << numberOfEvents << "\n";
     for (int i = 0; i < numberOfEvents; i++) {
-      if ((events[i].events & EPOLLERR) || (events[i].events & EPOLLHUP) ||
+      if ((events[i].events & EPOLLERR) ||
+          (events[i].events & EPOLLHUP) ||
           (!(events[i].events & EPOLLIN))) {
         /* An error has occured on this fd, or the socket is not
            ready for reading (why were we notified then?) */
-        fprintf(stderr, "epoll error\n");
+        debug() << "epoll error\n";
         close(events[i].data.fd);
         continue;
       }
@@ -84,22 +85,25 @@ int main(int argc, const char **argv) {
           in_len = sizeof in_addr;
           Socket infd = accept(sfd, &in_addr, &in_len);
           if (infd == -1) {
-            if ((errno == EAGAIN) || (errno == EWOULDBLOCK)) {
+            if ((errno == EAGAIN) ||
+                (errno == EWOULDBLOCK)) {
               /* We have processed all incoming
                  connections. */
               break;
-            } else {
+            }
+            else {
               perror("accept");
               break;
             }
           }
 
-          int s = getnameinfo(&in_addr, in_len, hbuf, sizeof hbuf, sbuf,
-                              sizeof sbuf, NI_NUMERICHOST | NI_NUMERICSERV);
+          int s = getnameinfo(&in_addr, in_len,
+                              hbuf, sizeof hbuf,
+                              sbuf, sizeof sbuf,
+                              NI_NUMERICHOST | NI_NUMERICSERV);
           if (s == 0) {
             printf("Accepted connection on descriptor %d "
-                   "(host=%s, port=%s)\n",
-                   infd, hbuf, sbuf);
+                           "(host=%s, port=%s)\n", infd, hbuf, sbuf);
           }
 
           /* Make the incoming socket non-blocking and add it to the
@@ -108,7 +112,8 @@ int main(int argc, const char **argv) {
           addEpollEvent(efd, infd);
         }
         continue;
-      } else {
+      }
+      else {
         /* We have data on the fd waiting to be read. Read and
            display it. We must read whatever data is available
            completely, as we are running in edge-triggered mode
@@ -127,9 +132,9 @@ int main(int argc, const char **argv) {
             if (errno != EAGAIN) {
               perror("read");
             }
-            done = true;
             break;
-          } else if (count == 0) {
+          }
+          else if (count == 0) {
             /* End of file. The remote has closed the
                connection. */
             done = true;
@@ -141,7 +146,8 @@ int main(int argc, const char **argv) {
         }
 
         if (done) {
-          printf("Closed connection on descriptor %d\n", events[i].data.fd);
+          printf("Closed connection on descriptor %d\n",
+                 events[i].data.fd);
 
           /* Closing the descriptor will make epoll remove it
              from the set of descriptors which are monitored. */

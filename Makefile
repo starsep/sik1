@@ -1,5 +1,5 @@
 COMPILER=g++
-CPPFLAGS=-Wall -Wunused -Wshadow -pedantic -O3 -std=c++11 -DDEBUG
+CPPFLAGS=-Wall -Wunused -Wshadow -pedantic -O3 -std=c++11 -DDEBUG -g
 
 all: server client
 

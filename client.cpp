@@ -51,7 +51,8 @@ int main(int argc, const char **argv) {
   int port = p.second;
   debug() << "Sending to host " << host << " port: " << port << '\n';
   Socket sock = connectClient(host, port);
-  const char *msg = "client2###############################\n";
+  const char *msg = "client1#############\n";
+  signal(SIGPIPE, SIG_IGN);
   while (true) {
     size_t len = strlen(msg);
     _write(sock, msg, len);
