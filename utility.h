@@ -62,10 +62,6 @@ ssize_t _read(Socket, void *, size_t);
 
 Socket _accept(Socket, sockaddr *, socklen_t *);
 
-uint16_t toNetworkByteOrder(uint16_t arg);
-
-uint16_t fromNetworkByteOrder(uint16_t arg);
-
 void sendTo(const Socket, const std::string &);
 
 uint16_t shortFromChars(char *);

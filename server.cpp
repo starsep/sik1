@@ -121,7 +121,7 @@ std::string getClientData(epoll_event &event, std::vector <Socket> &clients) {
       removeClient(clients, event.data.fd);
       break;
     }
-    uint16_t len = fromNetworkByteOrder(shortFromChars(buffer));
+    uint16_t len = buffer[0] * 0xff + buffer[1];
     debug() << "LEN: " << (int) len << " " << (int) shortFromChars(buffer) << " " << (int) buffer[0] << " " <<
     (int) buffer[1] << "\n";
     buffer[0] = buffer[1] = '#';
