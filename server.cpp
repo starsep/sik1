@@ -122,8 +122,7 @@ std::string getClientData(epoll_event &event, std::vector <Socket> &clients) {
       break;
     }
     uint16_t len = buffer[0] * 0xff + buffer[1];
-    debug() << "LEN: " << (int) len << " " << (int) shortFromChars(buffer) << " " << (int) buffer[0] << " " <<
-    (int) buffer[1] << "\n";
+    debug() << "LEN: " << (int) len << "\n";
     buffer[0] = buffer[1] = '#';
     buffer[count] = '\0';
     std::string tmp(buffer);
