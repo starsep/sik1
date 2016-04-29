@@ -127,6 +127,8 @@ std::string getClientData(epoll_event &event, std::vector <Socket> &clients) {
     result += buffer;
   }
 
+  result[0] = result[1] = '#';
+
   return result;
 }
 
