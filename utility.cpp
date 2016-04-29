@@ -9,6 +9,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include <byteswap.h>
+
 static void syserr(const char *fmt, ...) {
   va_list fmt_args;
 
@@ -65,9 +67,9 @@ void _getaddrinfo(const char *node, const char *service, addrinfo *hints,
                   addrinfo **res, bool passive) {
   setAddrinfo(hints, passive);
   int err = getaddrinfo(node, service, hints, res);
-  if (err == EAI_SYSTEM) { // system error
+  if (err == EAI_SYSTEM) {
     syserr("getaddrinfo: %s", gai_strerror(err));
-  } else if (err != 0) { // other error (host not found, etc.)
+  } else if (err != 0) {
     fatal("getaddrinfo: %s", gai_strerror(err));
   }
 }
@@ -139,7 +141,6 @@ void addEpollEvent(Epoll efd, Socket sock) {
   event.events = EPOLLIN | EPOLLET;
   if (epoll_ctl(efd, EPOLL_CTL_ADD, sock, &event) == -1) {
     perror("epoll_ctl");
-    abort();
   }
 }
 
@@ -163,4 +164,34 @@ Socket _accept(Socket sock, sockaddr *addr, socklen_t *addrlen) {
     perror("accept");
   }
   return result;
+}
+
+uint16_t toNetworkByteOrder(uint16_t arg) {
+  #if __BYTE_ORDER == __BIG_ENDIAN
+  return arg;
+  #else
+  return __bswap_16(arg);
+  #endif
+}
+
+uint16_t fromNetworkByteOrder(uint16_t arg) {
+  #if __BYTE_ORDER == __BIG_ENDIAN
+  return __bswap_16(arg);
+  #else
+  return arg;
+  #endif
+}
+
+void sendTo(const Socket sock, const std::string &msg) {
+  debug() << "Sending " << msg << " to " << sock << '\n';
+  char *buf = new char[2 + msg.size()];
+  uint16_t len = toNetworkByteOrder(msg.size());
+  char *len_c = reinterpret_cast<char *>(len);
+  buf[0] = len_c[0];
+  buf[1] = len_c[1];
+  for (size_t i = 0; i < msg.size(); i++) {
+    buf[2 + i] = msg[i];
+  }
+  _write(sock, buf, 2 + msg.size());
+  delete[] buf;
 }

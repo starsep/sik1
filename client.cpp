@@ -59,7 +59,7 @@ bool checkSocket(epoll_event &event, Socket sock) {
 void checkStdin(Socket sock) {
   std::string msg;
   std::getline(std::cin, msg);
-  _write(sock, msg.c_str(), msg.size());
+  sendTo(sock, msg);
 }
 
 int main(int argc, const char **argv) {

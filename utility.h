@@ -24,7 +24,9 @@ const Socket STDOUT = 1;
 const int MAX_CLIENT_SOCKETS = 2;
 const int MAX_CLIENTS = 20;
 
-enum class ExitCode { Ok = 0, InvalidArguments = 1, BadData = 100 };
+enum class ExitCode {
+  Ok = 0, InvalidArguments = 1, BadData = 100
+};
 
 void _connect(Socket, const sockaddr *, socklen_t);
 
@@ -59,5 +61,11 @@ void _signal(void (*)(int));
 ssize_t _read(Socket, void *, size_t);
 
 Socket _accept(Socket, sockaddr *, socklen_t *);
+
+uint16_t toNetworkByteOrder(uint16_t arg);
+
+uint16_t fromNetworkByteOrder(uint16_t arg);
+
+void sendTo(const Socket, const std::string &);
 
 #endif // SIK1_UTILITY_H
