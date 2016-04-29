@@ -185,12 +185,7 @@ uint16_t shortFromChars(char *source) {
 std::string receive(Socket from) {
   char buffer[MAX_LEN];
   while (true) {
-    ssize_t count = _read(from, buffer, MAX_LEN);
-    debug() << "READ\n";
-    for (int i = 0; i < count; i++) {
-      debug() << buffer[i];
-    }
-    debug() << "EOF\n";
+    ssize_t count = _read(from, buffer, MAX_LEN);;
     if (count == -1 && errno == EAGAIN) {
       break;
     }
