@@ -187,8 +187,9 @@ void sendTo(const Socket sock, const std::string &msg) {
   char *buf = new char[2 + msg.size()];
   uint16_t len = toNetworkByteOrder(msg.size());
   char *len_c = reinterpret_cast<char *>(len);
-  buf[0] = len_c[0];
-  buf[1] = len_c[1];
+//  buf[0] = len_c[0];
+//  buf[1] = len_c[1];
+  buf[0] = buf[1] = 'a';
   for (size_t i = 0; i < msg.size(); i++) {
     buf[2 + i] = msg[i];
   }
