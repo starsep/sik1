@@ -195,11 +195,5 @@ void sendTo(const Socket sock, const std::string &msg) {
 }
 
 uint16_t shortFromChars(char *source) {
-  union a {
-    char c[2];
-    uint16_t s;
-  } res;
-  res.c[0] = source[0];
-  res.c[1] = source[1];
-  return res.s;
+  return source[0] * 0xff + source[1];
 }
