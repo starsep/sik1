@@ -68,4 +68,6 @@ uint16_t fromNetworkByteOrder(uint16_t arg);
 
 void sendTo(const Socket, const std::string &);
 
+uint16_t shortFromChars(char *);
+
 #endif // SIK1_UTILITY_H
