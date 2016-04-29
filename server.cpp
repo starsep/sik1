@@ -113,7 +113,7 @@ std::string getClientData(epoll_event &event, std::vector <Socket> &clients) {
   while (true) {
     ssize_t count = _read(event.data.fd, buffer, MAX_LEN);
     if (count == -1 && errno == EAGAIN) {
-      debug() << "?\n";
+      //debug() << "?\n";
       break;
     }
     if (count == 0) {
@@ -122,7 +122,7 @@ std::string getClientData(epoll_event &event, std::vector <Socket> &clients) {
       break;
     }
     uint16_t len = buffer[0] * 0xff + buffer[1];
-    debug() << "LEN: " << (int) len << "\n";
+    //debug() << "LEN: " << (int) len << "\n";
     buffer[0] = buffer[1] = '#';
     buffer[count] = '\0';
     std::string tmp(buffer);
@@ -133,7 +133,7 @@ std::string getClientData(epoll_event &event, std::vector <Socket> &clients) {
 
 void sendToOthers(const std::vector <Socket> &clients, const Socket sender,
                   const std::string &msg) {
-  debug() << "Sending " << msg << " from: " << sender << "\n";
+  //debug() << "Sending " << msg << " from: " << sender << "\n";
   for (Socket s : clients) {
     if (s != sender) {
       sendTo(s, msg);
@@ -170,7 +170,7 @@ int main(int argc, const char **argv) {
       if (!checkEpollError(events[i], clients) &&
           !checkListeningSocket(events[i], sock, efd, clients)) {
         std::string result = getClientData(events[i], clients);
-        debug() << "GOT: " << result << "\n";
+        //debug() << "GOT: " << result << "\n";
         if (result.size() > 0) {
           sendToOthers(clients, events[i].data.fd, result);
         }
