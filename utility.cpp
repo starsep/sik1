@@ -160,7 +160,7 @@ ssize_t _read(Socket sock, void *buffer, size_t maxCount) {
 
 Socket _accept(Socket sock, sockaddr *addr, socklen_t *addrlen) {
   Socket result = accept(sock, addr, addrlen);
-  if (!((errno == EAGAIN) || (errno == EWOULDBLOCK))) {
+  if (result == -1 && !((errno == EAGAIN) || (errno == EWOULDBLOCK))) {
     perror("accept");
   }
   return result;
