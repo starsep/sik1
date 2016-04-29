@@ -178,15 +178,10 @@ std::string receive(Socket from) {
       break;
     }
     if (count == 0) {
-      debug() << "Closed connection with " << from << '\n';
       throw ClosedConnectionException();
     }
     uint16_t len = buffer[0] * 0xff + buffer[1];
-    //debug() << "LEN: " << (int) len << "\n";
-    buffer[0] = buffer[1] = '#';
-    buffer[count] = '\0';
-    std::string tmp(buffer);
-    std::string result = tmp.substr(2, tmp.size() - 2);
+    std::string result(buffer + 2, count - 2);
     if (len > MAX_LEN || result.size() != len) {
       throw BadNetworkDataException();
     }
