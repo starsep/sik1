@@ -112,7 +112,7 @@ std::string getClientData(epoll_event &event, std::vector <Socket> &clients) {
   std::string result;
   try {
     result = receive(event.data.fd);
-  } catch (ClosedConnectionException) {
+  } catch (...) {
     removeClient(clients, event.data.fd);
   }
   return result;

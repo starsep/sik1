@@ -43,8 +43,8 @@ int getPort(const char *cPort) {
 
 std::string getHost(const char *cHost) { return std::string(cHost); }
 
-void _connect(Socket sockfd, const sockaddr *addr, socklen_t addrlen) {
-  int err = connect(sockfd, addr, addrlen);
+void _connect(Socket sock, const sockaddr *addr, socklen_t addrlen) {
+  int err = connect(sock, addr, addrlen);
   if (err < 0) {
     syserr("connect");
   }
@@ -85,8 +85,8 @@ void _close(Socket fd) {
   }
 }
 
-bool _bind(Socket sockfd, const sockaddr *addr, socklen_t addrlen) {
-  return bind(sockfd, addr, addrlen) == 0;
+bool _bind(Socket sock, const sockaddr *addr, socklen_t addrlen) {
+  return bind(sock, addr, addrlen) == 0;
 }
 
 Debug &debug() {
@@ -171,9 +171,9 @@ uint16_t shortFromChars(char *source) {
 }
 
 std::string receive(Socket from) {
-  char buffer[MAX_LEN];
+  char buffer[BUFFER_LEN];
   while (true) {
-    ssize_t count = _read(from, buffer, MAX_LEN);;
+    ssize_t count = _read(from, buffer, BUFFER_LEN);
     if (count == -1 && errno == EAGAIN) {
       break;
     }
@@ -186,7 +186,11 @@ std::string receive(Socket from) {
     buffer[0] = buffer[1] = '#';
     buffer[count] = '\0';
     std::string tmp(buffer);
-    return tmp.substr(2, tmp.size() - 2);
+    std::string result = tmp.substr(2, tmp.size() - 2);
+    if (len > MAX_LEN || result.size() != len) {
+      throw BadNetworkDataException();
+    }
+    return result;
   }
   return "";
 }

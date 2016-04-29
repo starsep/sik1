@@ -13,12 +13,15 @@ using Socket = int;
 using Epoll = int;
 
 class ClosedConnectionException {};
+class BadNetworkDataException {};
 
 const int DEFAULT_PORT = 20160;
 const int MIN_PORT = 1;
 const int MAX_PORT = (1 << 16) - 1;
 const int INVALID_PORT = -1;
 const int MAX_LEN = 1000;
+const int BUFFER_LEN = MAX_LEN + 2;
+
 const std::string INVALID_HOST = "";
 const Socket STDIN = 0;
 const Socket STDOUT = 1;

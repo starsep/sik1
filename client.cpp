@@ -41,6 +41,10 @@ int connectClient(std::string host, int port) {
   return sock;
 }
 
+void cleanup(ExitCode exitCode) {
+  _exit(exitCode);
+}
+
 bool checkSocket(epoll_event &event, Socket sock) {
   if (event.data.fd == sock) {
     std::string msg;
@@ -48,8 +52,10 @@ bool checkSocket(epoll_event &event, Socket sock) {
       msg = receive(sock);
       std::cout << msg;
       std::cout.flush();
+    } catch (BadNetworkDataException) {
+      cleanup(ExitCode::BadData);
     } catch (ClosedConnectionException) {
-      perror("server disconnected");
+      cleanup(ExitCode::Ok);
     }
     return true;
   }
