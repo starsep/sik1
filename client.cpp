@@ -66,7 +66,7 @@ int main(int argc, const char **argv) {
   std::pair<std::string, int> p = get_arguments(argc, argv);
   std::string host = p.first;
   int port = p.second;
-  debug() << "Sending to host " << host << " port: " << port << '\n';
+  //debug() << "Sending to host " << host << " port: " << port << '\n';
   Socket sock = connectClient(host, port);
   Epoll efd = _epoll_create();
   addEpollEvent(efd, sock);

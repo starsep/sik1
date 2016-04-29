@@ -167,7 +167,7 @@ Socket _accept(Socket sock, sockaddr *addr, socklen_t *addrlen) {
 }
 
 void sendTo(const Socket sock, const std::string &msg) {
-  debug() << "Sending " << msg << " to " << sock << '\n';
+  //debug() << "Sending " << msg << " to " << sock << '\n';
   char *buf = new char[2 + msg.size()];
   buf[0] = msg.size() / 0xff;
   buf[1] = msg.size() % 0xff;
