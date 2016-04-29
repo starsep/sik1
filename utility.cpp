@@ -166,27 +166,11 @@ Socket _accept(Socket sock, sockaddr *addr, socklen_t *addrlen) {
   return result;
 }
 
-uint16_t toNetworkByteOrder(uint16_t arg) {
-  #if __BYTE_ORDER == __BIG_ENDIAN
-  return arg;
-  #else
-  return __bswap_16(arg);
-  #endif
-}
-
-uint16_t fromNetworkByteOrder(uint16_t arg) {
-  #if __BYTE_ORDER == __BIG_ENDIAN
-  return __bswap_16(arg);
-  #else
-  return arg;
-  #endif
-}
-
 void sendTo(const Socket sock, const std::string &msg) {
   debug() << "Sending " << msg << " to " << sock << '\n';
   char *buf = new char[2 + msg.size()];
-  uint16_t len = toNetworkByteOrder(msg.size());
-  *((uint16_t *) buf) = len;
+  buf[0] = msg.size() / 0xff;
+  buf[1] = msg.size() % 0xff;
   for (size_t i = 0; i < msg.size(); i++) {
     buf[2 + i] = msg[i];
   }
