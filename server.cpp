@@ -98,7 +98,7 @@ bool checkListeningSocket(epoll_event &event, Socket sock, Epoll efd,
         break;
       }
 
-      newConnectionDebug(sock, in_addr, in_len);
+      newConnectionDebug(client, in_addr, in_len);
 
       makeSocketNonBlocking(client);
       addClient(clients, client, efd);
