@@ -131,6 +131,7 @@ std::string getClientData(epoll_event &event, std::vector <Socket> &clients) {
 
 void sendToOthers(const std::vector <Socket> &clients, const Socket sender,
                   const std::string &msg) {
+  debug() << "Sending " << msg << " from: " << sender << "\n";
   for (Socket s : clients) {
     if (s != sender) {
       sendTo(s, msg);
