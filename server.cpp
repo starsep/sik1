@@ -168,6 +168,7 @@ int main(int argc, const char **argv) {
       if (!checkEpollError(events[i], clients) &&
           !checkListeningSocket(events[i], sock, efd, clients)) {
         std::string result = getClientData(events[i], clients);
+        debug() << "GOT: " << result << "\n";
         if (result.size() > 0) {
           sendToOthers(clients, events[i].data.fd, result);
         }
