@@ -115,6 +115,7 @@ std::string getClientData(epoll_event &event, std::vector <Socket> &clients) {
   while (true) {
     ssize_t count = _read(event.data.fd, buffer, MAX_LEN);
     if (count == -1 && errno == EAGAIN) {
+      debug() << "?\n";
       break;
     }
     if (count == 0) {
