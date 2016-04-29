@@ -12,6 +12,8 @@
 using Socket = int;
 using Epoll = int;
 
+class ClosedConnectionException {};
+
 const int DEFAULT_PORT = 20160;
 const int MIN_PORT = 1;
 const int MAX_PORT = (1 << 16) - 1;
@@ -65,5 +67,7 @@ Socket _accept(Socket, sockaddr *, socklen_t *);
 void sendTo(const Socket, const std::string &);
 
 uint16_t shortFromChars(char *);
+
+std::string receive(Socket);
 
 #endif // SIK1_UTILITY_H

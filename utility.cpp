@@ -181,3 +181,24 @@ void sendTo(const Socket sock, const std::string &msg) {
 uint16_t shortFromChars(char *source) {
   return source[0] * 0xff + source[1];
 }
+
+std::string receive(Socket from) {
+  char buffer[MAX_LEN];
+  while (true) {
+    ssize_t count = _read(from, buffer, MAX_LEN);
+    if (count == -1 && errno == EAGAIN) {
+      break;
+    }
+    if (count == 0) {
+      debug() << "Closed connection with " << from << '\n';
+      throw ClosedConnectionException();
+    }
+    uint16_t len = buffer[0] * 0xff + buffer[1];
+    //debug() << "LEN: " << (int) len << "\n";
+    buffer[0] = buffer[1] = '#';
+    buffer[count] = '\0';
+    std::string tmp(buffer);
+    return tmp.substr(2, tmp.size() - 2);
+  }
+  return "";
+}

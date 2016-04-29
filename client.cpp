@@ -43,13 +43,12 @@ int connectClient(std::string host, int port) {
 
 bool checkSocket(epoll_event &event, Socket sock) {
   if (event.data.fd == sock) {
-    char buffer[MAX_LEN];
-    ssize_t count = _read(sock, buffer, MAX_LEN);
-    if (count == 0) {
+    std::string msg;
+    try {
+      msg = receive(sock);
+      std::cout << msg;
+    } catch (ClosedConnectionException) {
       perror("server disconnected");
-    } else {
-      buffer[count] = '\0';
-      _write(STDOUT, buffer, count);
     }
     return true;
   }

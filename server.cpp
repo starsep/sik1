@@ -109,26 +109,13 @@ bool checkListeningSocket(epoll_event &event, Socket sock, Epoll efd,
 }
 
 std::string getClientData(epoll_event &event, std::vector <Socket> &clients) {
-  char buffer[MAX_LEN];
-  while (true) {
-    ssize_t count = _read(event.data.fd, buffer, MAX_LEN);
-    if (count == -1 && errno == EAGAIN) {
-      //debug() << "?\n";
-      break;
-    }
-    if (count == 0) {
-      debug() << "Closed connection with " << event.data.fd << '\n';
-      removeClient(clients, event.data.fd);
-      break;
-    }
-    uint16_t len = buffer[0] * 0xff + buffer[1];
-    //debug() << "LEN: " << (int) len << "\n";
-    buffer[0] = buffer[1] = '#';
-    buffer[count] = '\0';
-    std::string tmp(buffer);
-    return tmp.substr(2, tmp.size() - 2);
+  std::string result;
+  try {
+    result = receive(event.data.fd);
+  } catch (ClosedConnectionException) {
+    removeClient(clients, event.data.fd);
   }
-  return "";
+  return result;
 }
 
 void sendToOthers(const std::vector <Socket> &clients, const Socket sender,
