@@ -47,6 +47,7 @@ bool checkSocket(epoll_event &event, Socket sock) {
     try {
       msg = receive(sock);
       std::cout << msg;
+      std::cout.flush();
     } catch (ClosedConnectionException) {
       perror("server disconnected");
     }
