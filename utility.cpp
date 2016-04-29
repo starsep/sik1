@@ -22,17 +22,6 @@ static void syserr(const char *fmt, ...) {
   _exit(ExitCode::InvalidArguments);
 }
 
-static void fatal(const char *fmt, ...) {
-  va_list fmt_args;
-
-  fprintf(stderr, "ERROR: ");
-  va_start(fmt_args, fmt);
-  vfprintf(stderr, fmt, fmt_args);
-  va_end(fmt_args);
-  fprintf(stderr, "\n");
-  _exit(ExitCode::InvalidArguments);
-}
-
 static void setAddrinfo(addrinfo *addr, bool passive) {
   memset(addr, 0, sizeof(addrinfo));
   addr->ai_family = AF_INET; // IPv4
@@ -70,7 +59,7 @@ void _getaddrinfo(const char *node, const char *service, addrinfo *hints,
   if (err == EAI_SYSTEM) {
     syserr("getaddrinfo: %s", gai_strerror(err));
   } else if (err != 0) {
-    fatal("getaddrinfo: %s", gai_strerror(err));
+    syserr("getaddrinfo: %s", gai_strerror(err));
   }
 }
 
@@ -110,27 +99,26 @@ void makeSocketNonBlocking(Socket sock) {
 
   flags = fcntl(sock, F_GETFL, 0);
   if (flags == -1) {
-    perror("fcntl");
+    syserr("fcntl");
   }
 
   flags |= O_NONBLOCK;
   s = fcntl(sock, F_SETFL, flags);
   if (s == -1) {
-    perror("fcntl");
+    syserr("fcntl");
   }
 }
 
 void _listen(Socket sock) {
   if (listen(sock, SOMAXCONN)) {
-    perror("listen");
+    syserr("listen");
   }
 }
 
 Epoll _epoll_create() {
   Epoll efd = epoll_create1(0);
   if (efd == -1) {
-    perror("epoll_create");
-    abort();
+    syserr("epoll_create");
   }
   return efd;
 }
@@ -140,20 +128,20 @@ void addEpollEvent(Epoll efd, Socket sock) {
   event.data.fd = sock;
   event.events = EPOLLIN | EPOLLET;
   if (epoll_ctl(efd, EPOLL_CTL_ADD, sock, &event) == -1) {
-    perror("epoll_ctl");
+    syserr("epoll_ctl");
   }
 }
 
 void _signal(sighandler_t sighandler) {
   if (signal(SIGINT, sighandler)) {
-    perror("signal");
+    syserr("signal");
   }
 }
 
 ssize_t _read(Socket sock, void *buffer, size_t maxCount) {
   ssize_t count = read(sock, buffer, maxCount);
   if (count == -1 && errno != EAGAIN) {
-    perror("read");
+    syserr("read");
   }
   return count;
 }
@@ -161,7 +149,7 @@ ssize_t _read(Socket sock, void *buffer, size_t maxCount) {
 Socket _accept(Socket sock, sockaddr *addr, socklen_t *addrlen) {
   Socket result = accept(sock, addr, addrlen);
   if (result == -1 && !((errno == EAGAIN) || (errno == EWOULDBLOCK))) {
-    perror("accept");
+    syserr("accept");
   }
   return result;
 }
