@@ -109,9 +109,7 @@ bool checkListeningSocket(epoll_event &event, Socket sock, Epoll efd,
 }
 
 std::string getClientData(epoll_event &event, std::vector <Socket> &clients) {
-  std::string result;
   char buffer[MAX_LEN];
-
   while (true) {
     ssize_t count = _read(event.data.fd, buffer, MAX_LEN);
     if (count == -1 && errno == EAGAIN) {
@@ -125,10 +123,10 @@ std::string getClientData(epoll_event &event, std::vector <Socket> &clients) {
     }
     buffer[count] = '\0';
     buffer[0] = buffer[1] = '#';
-    result += buffer;
+    std::string tmp(buffer);
+    return tmp.substr(2, tmp.size() - 2);
   }
-
-  return result;
+  return "";
 }
 
 void sendToOthers(const std::vector <Socket> &clients, const Socket sender,
