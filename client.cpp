@@ -50,8 +50,7 @@ bool checkSocket(epoll_event &event, Socket sock) {
     std::string msg;
     try {
       msg = receive(sock);
-      std::cout << msg;
-      std::cout.flush();
+      std::cout << msg << std::endl;
     } catch (BadNetworkDataException) {
       cleanup(ExitCode::BadData);
     } catch (ClosedConnectionException) {
