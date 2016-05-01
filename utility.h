@@ -14,7 +14,7 @@ using Socket = int;
 using Epoll = int;
 
 class ClosedConnectionException {};
-
+class BadData {};
 class BadNetworkDataException {};
 
 const unsigned DEFAULT_PORT = 20160;
@@ -22,7 +22,8 @@ const unsigned MIN_PORT = 1;
 const unsigned MAX_PORT = (1 << 16) - 1;
 const unsigned INVALID_PORT = 0;
 const size_t MAX_LEN = 1000;
-const size_t BUFFER_LEN = MAX_LEN + 2;
+const size_t HEADER_LEN = 2;
+const size_t BUFFER_LEN = MAX_LEN + HEADER_LEN;
 const int INFINITY = -1;
 
 const std::string INVALID_HOST = "";
@@ -32,7 +33,6 @@ const Socket STDIN = 0;
 const size_t MAX_SOCKETS_CLIENT = 2;
 const size_t MAX_SOCKETS_SERVER = 21;
 
-const size_t HEADER_SIZE = 2;
 const uint16_t BYTE = 0xff;
 
 enum class ExitCode {

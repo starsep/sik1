@@ -148,14 +148,15 @@ Socket _accept(Socket sock, sockaddr *addr, socklen_t *addrlen) {
   return result;
 }
 
-void sendTo(const Socket sock, const std::string &msg) {
-  char *buf = new char[HEADER_SIZE + msg.size()];
+void sendTo(const Socket sock, const std::string &m) {
+  std::string msg = m.size() > MAX_LEN ? m.substr(0, MAX_LEN) : m;
+  char *buf = new char[HEADER_LEN + msg.size()];
   buf[0] = msg.size() / BYTE;
   buf[1] = msg.size() % BYTE;
   for (size_t i = 0; i < msg.size(); i++) {
-    buf[HEADER_SIZE + i] = msg[i];
+    buf[HEADER_LEN + i] = msg[i];
   }
-  _write(sock, buf, HEADER_SIZE + msg.size());
+  _write(sock, buf, HEADER_LEN + msg.size());
   delete[] buf;
 }
 
@@ -170,7 +171,7 @@ std::string receive(Socket from) {
       throw ClosedConnectionException();
     }
     uint16_t len = buffer[0] * BYTE + buffer[1];
-    std::string result(buffer + HEADER_SIZE, count - HEADER_SIZE);
+    std::string result(buffer + HEADER_LEN, count - HEADER_LEN);
     if (len > MAX_LEN || result.size() != len) {
       throw BadNetworkDataException();
     }
