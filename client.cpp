@@ -33,7 +33,7 @@ int connectClient(std::string host, int port) {
   _getaddrinfo(host.c_str(), std::to_string(port).c_str(), &hints, &result);
 
   Socket sock =
-          _socket(result->ai_family, result->ai_socktype, result->ai_protocol);
+      _socket(result->ai_family, result->ai_socktype, result->ai_protocol);
 
   _connect(sock, result->ai_addr, result->ai_addrlen);
   freeaddrinfo(result);
@@ -41,9 +41,7 @@ int connectClient(std::string host, int port) {
   return sock;
 }
 
-void cleanup(ExitCode exitCode) {
-  _exit(exitCode);
-}
+void cleanup(ExitCode exitCode) { _exit(exitCode); }
 
 bool checkSocket(epoll_event &event, Socket sock) {
   if (event.data.fd == sock) {
@@ -77,8 +75,8 @@ int main(int argc, const char **argv) {
   addEpollEvent(efd, STDIN);
 
   while (true) {
-    epoll_event *events = new epoll_event[MAX_CLIENT_SOCKETS];
-    int numberOfEvents = epoll_wait(efd, events, MAX_CLIENT_SOCKETS, -1);
+    epoll_event *events = new epoll_event[MAX_SOCKETS_CLIENT];
+    int numberOfEvents = epoll_wait(efd, events, MAX_SOCKETS_CLIENT, -1);
     for (int i = 0; i < numberOfEvents; i++) {
       if (!checkSocket(events[i], sock)) {
         checkStdin(sock);

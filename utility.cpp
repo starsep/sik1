@@ -11,7 +11,7 @@
 
 #include <byteswap.h>
 
-static void syserr(const char *fmt, ...) {
+void syserr(const char *fmt, ...) {
   va_list fmt_args;
 
   fprintf(stderr, "ERROR: ");
@@ -19,7 +19,7 @@ static void syserr(const char *fmt, ...) {
   vfprintf(stderr, fmt, fmt_args);
   va_end(fmt_args);
   fprintf(stderr, " (%d; %s)\n", errno, strerror(errno));
-  _exit(ExitCode::InvalidArguments);
+  _exit(ExitCode::SystemError);
 }
 
 static void setAddrinfo(addrinfo *addr, bool passive) {
@@ -150,7 +150,6 @@ Socket _accept(Socket sock, sockaddr *addr, socklen_t *addrlen) {
 }
 
 void sendTo(const Socket sock, const std::string &msg) {
-  //debug() << "Sending " << msg << " to " << sock << '\n';
   char *buf = new char[2 + msg.size()];
   buf[0] = msg.size() / 0xff;
   buf[1] = msg.size() % 0xff;
@@ -161,9 +160,7 @@ void sendTo(const Socket sock, const std::string &msg) {
   delete[] buf;
 }
 
-uint16_t shortFromChars(char *source) {
-  return source[0] * 0xff + source[1];
-}
+uint16_t shortFromChars(char *source) { return source[0] * 0xff + source[1]; }
 
 std::string receive(Socket from) {
   char buffer[BUFFER_LEN];
@@ -182,5 +179,5 @@ std::string receive(Socket from) {
     }
     return result;
   }
-  return "";
+  return INVALID_MESSAGE;
 }

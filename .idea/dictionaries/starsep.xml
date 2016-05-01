@@ -4,14 +4,19 @@
       <w>addr</w>
       <w>addrinfo</w>
       <w>addrlen</w>
+      <w>cppflags</w>
       <w>epoll</w>
       <w>getaddrinfo</w>
       <w>hbuf</w>
       <w>infd</w>
       <w>sbuf</w>
+      <w>sighandler</w>
       <w>signum</w>
       <w>stdin</w>
       <w>stdout</w>
+      <w>syserr</w>
+      <w>wshadow</w>
+      <w>wunused</w>
     </words>
   </dictionary>
 </component>
