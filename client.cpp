@@ -45,9 +45,8 @@ void cleanup(ExitCode exitCode) { _exit(exitCode); }
 
 bool checkSocket(epoll_event &event, Socket sock) {
   if (event.data.fd == sock) {
-    std::string msg;
     try {
-      msg = receive(sock);
+      std::string msg = receive(sock);
       std::cout << msg << std::endl;
     } catch (BadNetworkDataException) {
       cleanup(ExitCode::BadData);

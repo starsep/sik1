@@ -70,8 +70,8 @@ Socket _socket(int domain, int type, int protocol) {
   return result;
 }
 
-void _write(Socket fd, const void *buf, size_t count) {
-  size_t err = write(fd, buf, count);
+void _write(Socket sock, const void *buf, size_t count) {
+  size_t err = write(sock, buf, count);
   if (err != count) {
     syserr("partial / failed write");
   }
