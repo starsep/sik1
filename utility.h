@@ -31,6 +31,9 @@ const Socket STDIN = 0;
 const size_t MAX_SOCKETS_CLIENT = 2;
 const size_t MAX_SOCKETS_SERVER = 21;
 
+const size_t HEADER_SIZE = 2;
+const uint16_t BYTE = 0xff;
+
 enum class ExitCode {
   Ok = 0,
   InvalidArguments = 1,
