@@ -69,6 +69,7 @@ int main(int argc, const char **argv) {
   std::string host = p.first;
   int port = p.second;
   Socket sock = connectClient(host, port);
+  makeSocketNonBlocking(sock);
   Epoll efd = _epoll_create();
   addEpollEvent(efd, sock);
   addEpollEvent(efd, STDIN);
