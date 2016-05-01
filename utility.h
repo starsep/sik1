@@ -2,11 +2,13 @@
 #define SIK1_UTILITY_H
 
 #include <iostream>
-#include <netdb.h>
-#include <sys/epoll.h>
 
 #include <string>
 #include <vector>
+
+#include <netdb.h>
+#include <sys/epoll.h>
+
 
 using Socket = int;
 using Epoll = int;
@@ -15,19 +17,19 @@ class ClosedConnectionException {};
 
 class BadNetworkDataException {};
 
-const int DEFAULT_PORT = 20160;
-const int MIN_PORT = 1;
-const int MAX_PORT = (1 << 16) - 1;
-const int INVALID_PORT = -1;
-const int MAX_LEN = 1000;
-const int BUFFER_LEN = MAX_LEN + 2;
+const unsigned DEFAULT_PORT = 20160;
+const unsigned MIN_PORT = 1;
+const unsigned MAX_PORT = (1 << 16) - 1;
+const unsigned INVALID_PORT = 0;
+const size_t MAX_LEN = 1000;
+const size_t BUFFER_LEN = MAX_LEN + 2;
 
 const std::string INVALID_HOST = "";
 const std::string INVALID_MESSAGE = "";
 const Socket STDIN = 0;
 
-const int MAX_SOCKETS_CLIENT = 2;
-const int MAX_SOCKETS_SERVER = 21;
+const size_t MAX_SOCKETS_CLIENT = 2;
+const size_t MAX_SOCKETS_SERVER = 21;
 
 enum class ExitCode {
   Ok = 0,
@@ -51,7 +53,7 @@ void _close(Socket);
 
 void _write(Socket, const void *, size_t);
 
-int getPort(const char *);
+unsigned getPort(const char *);
 
 std::string getHost(const char *);
 
@@ -67,13 +69,9 @@ void addEpollEvent(Epoll, Socket);
 
 void _signal(void (*)(int));
 
-ssize_t _read(Socket, void *, size_t);
-
 Socket _accept(Socket, sockaddr *, socklen_t *);
 
 void sendTo(const Socket, const std::string &);
-
-uint16_t shortFromChars(char *);
 
 std::string receive(Socket);
 

@@ -1,36 +1,33 @@
 #include "utility.h"
 
 void usageServer(const char **argv) {
-  std::cerr << "Usage: " << argv[0] << " [port]" << std::endl;
-  ;
+  std::cerr << "Usage: " << argv[0] << " [port]" << std::endl;;
   _exit(ExitCode::InvalidArguments);
 }
 
 int getArguments(int argc, const char **argv) {
   if (argc > 3) {
-    std::cerr << "Bad number of arguments" << std::endl;
-    ;
+    std::cerr << "Bad number of arguments" << std::endl;;
     usageServer(argv);
   }
   if (argc == 1) {
     return DEFAULT_PORT;
   }
-  int port = getPort(argv[1]);
+  unsigned port = getPort(argv[1]);
   if (port == INVALID_PORT) {
-    std::cerr << "Bad port number" << std::endl;
-    ;
+    std::cerr << "Bad port number" << std::endl;;
     usageServer(argv);
   }
   return port;
 }
 
-int connectServer(int port) {
+Socket connectServer(int port) {
   addrinfo hints;
   addrinfo *result;
 
   _getaddrinfo(nullptr, std::to_string(port).c_str(), &hints, &result, true);
 
-  int sock;
+  Socket sock = 0;
   addrinfo *rp;
   for (rp = result; rp != nullptr; rp = rp->ai_next) {
     sock = _socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
@@ -44,7 +41,6 @@ int connectServer(int port) {
 
   if (rp == nullptr) {
     syserr("Could not bind\n");
-    return -1;
   }
 
   freeaddrinfo(result);
@@ -54,7 +50,7 @@ int connectServer(int port) {
   return sock;
 }
 
-void removeClient(std::vector<Socket> &clients, Socket client) {
+void removeClient(std::vector <Socket> &clients, Socket client) {
   _close(client); // removes from epoll
   for (auto it = clients.begin(); it != clients.end(); it++) {
     if (*it == client) {
@@ -64,7 +60,7 @@ void removeClient(std::vector<Socket> &clients, Socket client) {
   }
 }
 
-bool checkEpollError(epoll_event &event, std::vector<Socket> &clients) {
+bool checkEpollError(epoll_event &event, std::vector <Socket> &clients) {
   if ((event.events & EPOLLERR) || (event.events & EPOLLHUP) ||
       (!(event.events & EPOLLIN))) {
     syserr("epoll");
@@ -74,7 +70,7 @@ bool checkEpollError(epoll_event &event, std::vector<Socket> &clients) {
   return false;
 }
 
-void addClient(std::vector<Socket> &clients, Socket client, Epoll efd) {
+void addClient(std::vector <Socket> &clients, Socket client, Epoll efd) {
   addEpollEvent(efd, client);
   clients.push_back(client);
 }
@@ -84,12 +80,12 @@ void newConnectionDebug(Socket client, sockaddr in_addr, socklen_t in_len) {
   if (getnameinfo(&in_addr, in_len, hbuf, sizeof hbuf, sbuf, sizeof sbuf,
                   NI_NUMERICHOST | NI_NUMERICSERV) == 0) {
     std::cerr << "Connection with " << client << " (host=" << hbuf
-              << ", port=" << sbuf << ")" << std::endl;
+    << ", port=" << sbuf << ")" << std::endl;
   }
 }
 
 bool checkListeningSocket(epoll_event &event, Socket sock, Epoll efd,
-                          std::vector<Socket> &clients) {
+                          std::vector <Socket> &clients) {
   if (sock == event.data.fd) {
     while (true) {
       sockaddr in_addr;
@@ -109,7 +105,7 @@ bool checkListeningSocket(epoll_event &event, Socket sock, Epoll efd,
   return false;
 }
 
-std::string getClientData(epoll_event &event, std::vector<Socket> &clients) {
+std::string getClientData(epoll_event &event, std::vector <Socket> &clients) {
   std::string result;
   try {
     result = receive(event.data.fd);
@@ -119,7 +115,7 @@ std::string getClientData(epoll_event &event, std::vector<Socket> &clients) {
   return result;
 }
 
-void sendToOthers(const std::vector<Socket> &clients, const Socket sender,
+void sendToOthers(const std::vector <Socket> &clients, const Socket sender,
                   const std::string &msg) {
   for (Socket s : clients) {
     if (s != sender) {
@@ -130,8 +126,6 @@ void sendToOthers(const std::vector<Socket> &clients, const Socket sender,
 
 static bool finished = false;
 
-void signalCtrlC(int sig) { finished = true; }
-
 void cleanup(Socket sock) {
   shutdown(sock, SHUT_RDWR);
   _close(sock);
@@ -139,14 +133,14 @@ void cleanup(Socket sock) {
 }
 
 int main(int argc, const char **argv) {
-  _signal(signalCtrlC);
+  _signal([](int) { finished = true; });
   int port = getArguments(argc, argv);
   std::cerr << "Listening on port: " << port << std::endl;
   Socket sock = connectServer(port);
   Epoll efd = _epoll_create();
   addEpollEvent(efd, sock);
 
-  std::vector<Socket> clients;
+  std::vector <Socket> clients;
 
   while (!finished) {
     epoll_event *events = new epoll_event[MAX_SOCKETS_SERVER];

@@ -1,4 +1,5 @@
 #include "utility.h"
+
 #include <csignal>
 #include <cstdarg>
 #include <cstdlib>
@@ -8,8 +9,6 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
-
-#include <byteswap.h>
 
 void syserr(const char *fmt, ...) {
   va_list fmt_args;
@@ -30,11 +29,11 @@ static void setAddrinfo(addrinfo *addr, bool passive) {
   addr->ai_flags |= AI_PASSIVE & passive;
 }
 
-int getPort(const char *cPort) {
+unsigned getPort(const char *cPort) {
   std::string sPort(cPort);
-  int port;
+  unsigned long port;
   try {
-    port = std::stoi(sPort);
+    port = std::stoul(sPort);
   } catch (...) {
     return INVALID_PORT;
   }
@@ -133,7 +132,7 @@ void _signal(sighandler_t sighandler) {
   }
 }
 
-ssize_t _read(Socket sock, void *buffer, size_t maxCount) {
+static ssize_t _read(Socket sock, void *buffer, size_t maxCount) {
   ssize_t count = read(sock, buffer, maxCount);
   if (count == -1 && errno != EAGAIN) {
     syserr("read");
@@ -159,8 +158,6 @@ void sendTo(const Socket sock, const std::string &msg) {
   _write(sock, buf, 2 + msg.size());
   delete[] buf;
 }
-
-uint16_t shortFromChars(char *source) { return source[0] * 0xff + source[1]; }
 
 std::string receive(Socket from) {
   char buffer[BUFFER_LEN];
