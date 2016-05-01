@@ -75,7 +75,7 @@ int main(int argc, const char **argv) {
 
   while (true) {
     epoll_event *events = new epoll_event[MAX_SOCKETS_CLIENT];
-    int numberOfEvents = epoll_wait(efd, events, MAX_SOCKETS_CLIENT, -1);
+    int numberOfEvents = epoll_wait(efd, events, MAX_SOCKETS_CLIENT, INFINITY);
     for (int i = 0; i < numberOfEvents; i++) {
       if (!checkSocket(events[i], sock)) {
         checkStdin(sock);
