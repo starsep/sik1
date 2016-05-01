@@ -14,7 +14,6 @@ using Socket = int;
 using Epoll = int;
 
 class ClosedConnectionException {};
-class BadData {};
 class BadNetworkDataException {};
 
 const unsigned DEFAULT_PORT = 20160;
