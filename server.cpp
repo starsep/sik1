@@ -144,7 +144,7 @@ int main(int argc, const char **argv) {
 
   while (!finished) {
     epoll_event *events = new epoll_event[MAX_SOCKETS_SERVER];
-    int numberOfEvents = epoll_wait(efd, events, MAX_SOCKETS_SERVER, -1);
+    int numberOfEvents = epoll_wait(efd, events, MAX_SOCKETS_SERVER, INFINITY);
     for (int i = 0; i < numberOfEvents; i++) {
       if (!checkEpollError(events[i], clients) &&
           !checkListeningSocket(events[i], sock, efd, clients)) {

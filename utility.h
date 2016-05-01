@@ -23,6 +23,7 @@ const unsigned MAX_PORT = (1 << 16) - 1;
 const unsigned INVALID_PORT = 0;
 const size_t MAX_LEN = 1000;
 const size_t BUFFER_LEN = MAX_LEN + 2;
+const int INFINITY = -1;
 
 const std::string INVALID_HOST = "";
 const std::string INVALID_MESSAGE = "";
