@@ -89,11 +89,6 @@ bool _bind(Socket sock, const sockaddr *addr, socklen_t addrlen) {
   return bind(sock, addr, addrlen) == 0;
 }
 
-Debug &debug() {
-  static Debug instance{};
-  return instance;
-}
-
 void makeSocketNonBlocking(Socket sock) {
   int flags, s;
 

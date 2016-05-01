@@ -1,18 +1,18 @@
 #include "utility.h"
 
 void usageClient(const char **argv) {
-  debug() << "Usage: " << argv[0] << " host [port]\n";
+  std::cerr << "Usage: " << argv[0] << " host [port]\n";
   _exit(ExitCode::InvalidArguments);
 }
 
 std::pair<std::string, int> get_arguments(int argc, const char **argv) {
   if (argc < 2 || argc > 3) {
-    debug() << "Bad number of arguments\n";
+    std::cerr << "Bad number of arguments\n";
     usageClient(argv);
   }
   std::string host = getHost(argv[1]);
   if (host == INVALID_HOST) {
-    debug() << "Bad host\n";
+    std::cerr << "Bad host\n";
     usageClient(argv);
   }
   if (argc == 2) {
@@ -20,7 +20,7 @@ std::pair<std::string, int> get_arguments(int argc, const char **argv) {
   }
   int port = getPort(argv[2]);
   if (port == INVALID_PORT) {
-    debug() << "Bad port number\n";
+    std::cerr << "Bad port number\n";
     usageClient(argv);
   }
   return std::make_pair(host, port);
@@ -71,7 +71,6 @@ int main(int argc, const char **argv) {
   std::pair<std::string, int> p = get_arguments(argc, argv);
   std::string host = p.first;
   int port = p.second;
-  //debug() << "Sending to host " << host << " port: " << port << '\n';
   Socket sock = connectClient(host, port);
   Epoll efd = _epoll_create();
   addEpollEvent(efd, sock);

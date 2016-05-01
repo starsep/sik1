@@ -1,8 +1,7 @@
 #ifndef SIK1_UTILITY_H
 #define SIK1_UTILITY_H
 
-#include "Debug.h"
-
+#include <iostream>
 #include <netdb.h>
 #include <sys/epoll.h>
 
@@ -50,8 +49,6 @@ int getPort(const char *);
 std::string getHost(const char *);
 
 bool _bind(Socket, const sockaddr *, socklen_t);
-
-Debug &debug();
 
 void makeSocketNonBlocking(Socket);
 
