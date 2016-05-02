@@ -41,40 +41,23 @@ enum class ExitCode {
 };
 
 void syserr(const char *, ...);
-
 void _connect(Socket, const sockaddr *, socklen_t);
-
 void _exit(ExitCode);
-
 void _getaddrinfo(const char *, const char *, addrinfo *, addrinfo **,
                   bool = false);
-
 Socket _socket(int, int, int);
-
 void _close(Socket);
-
 void _write(Socket, const void *, size_t);
-
 unsigned getPort(const char *);
-
 std::string getHost(const char *);
-
 bool _bind(Socket, const sockaddr *, socklen_t);
-
 void makeSocketNonBlocking(Socket);
-
 void _listen(Socket);
-
 Epoll _epoll_create();
-
 void addEpollEvent(Epoll, Socket);
-
 void _signal(void (*)(int));
-
 Socket _accept(Socket, sockaddr *, socklen_t *);
-
 void sendTo(const Socket, const std::string &);
-
 std::string receive(Socket);
 
 #endif // SIK1_UTILITY_H
