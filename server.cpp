@@ -50,7 +50,7 @@ Socket connectServer(int port) {
   return sock;
 }
 
-void removeClient(std::vector <Socket> &clients, Socket client) {
+void removeClient(std::vector<Socket> &clients, Socket client) {
   _close(client); // removes from epoll
   for (auto it = clients.begin(); it != clients.end(); it++) {
     if (*it == client) {
@@ -60,7 +60,7 @@ void removeClient(std::vector <Socket> &clients, Socket client) {
   }
 }
 
-bool checkEpollError(epoll_event &event, std::vector <Socket> &clients) {
+bool checkEpollError(epoll_event &event, std::vector<Socket> &clients) {
   if ((event.events & EPOLLERR) || (event.events & EPOLLHUP) ||
       (!(event.events & EPOLLIN))) {
     syserr("epoll");
@@ -70,7 +70,7 @@ bool checkEpollError(epoll_event &event, std::vector <Socket> &clients) {
   return false;
 }
 
-void addClient(std::vector <Socket> &clients, Socket client, Epoll efd) {
+void addClient(std::vector<Socket> &clients, Socket client, Epoll efd) {
   addEpollEvent(efd, client);
   clients.push_back(client);
 }
@@ -80,12 +80,12 @@ void newConnectionDebug(Socket client, sockaddr in_addr, socklen_t in_len) {
   if (getnameinfo(&in_addr, in_len, hbuf, sizeof hbuf, sbuf, sizeof sbuf,
                   NI_NUMERICHOST | NI_NUMERICSERV) == 0) {
     std::cerr << "Connection with " << client << " (host=" << hbuf
-    << ", port=" << sbuf << ")" << std::endl;
+              << ", port=" << sbuf << ")" << std::endl;
   }
 }
 
 bool checkListeningSocket(epoll_event &event, Socket sock, Epoll efd,
-                          std::vector <Socket> &clients) {
+                          std::vector<Socket> &clients) {
   if (sock == event.data.fd) {
     while (true) {
       sockaddr in_addr;
@@ -95,7 +95,9 @@ bool checkListeningSocket(epoll_event &event, Socket sock, Epoll efd,
         break;
       }
 
+#ifdef DEBUG
       newConnectionDebug(client, in_addr, in_len);
+#endif // DEBUG
 
       makeSocketNonBlocking(client);
       addClient(clients, client, efd);
@@ -105,7 +107,7 @@ bool checkListeningSocket(epoll_event &event, Socket sock, Epoll efd,
   return false;
 }
 
-std::string getClientData(epoll_event &event, std::vector <Socket> &clients) {
+std::string getClientData(epoll_event &event, std::vector<Socket> &clients) {
   std::string result;
   try {
     result = receive(event.data.fd);
@@ -115,7 +117,7 @@ std::string getClientData(epoll_event &event, std::vector <Socket> &clients) {
   return result;
 }
 
-void sendToOthers(const std::vector <Socket> &clients, const Socket sender,
+void sendToOthers(const std::vector<Socket> &clients, const Socket sender,
                   const std::string &msg) {
   for (Socket s : clients) {
     if (s != sender) {
@@ -135,12 +137,14 @@ void cleanup(Socket sock) {
 int main(int argc, const char **argv) {
   _signal([](int) { finished = true; });
   int port = getArguments(argc, argv);
+#ifdef DEBUG
   std::cerr << "Listening on port: " << port << std::endl;
+#endif // DEBUG
   Socket sock = connectServer(port);
   Epoll efd = _epoll_create();
   addEpollEvent(efd, sock);
 
-  std::vector <Socket> clients;
+  std::vector<Socket> clients;
 
   while (!finished) {
     epoll_event *events = new epoll_event[MAX_SOCKETS_SERVER];

@@ -5,6 +5,7 @@
       <w>addrinfo</w>
       <w>addrlen</w>
       <w>cppflags</w>
+      <w>ddebug</w>
       <w>epoll</w>
       <w>getaddrinfo</w>
       <w>hbuf</w>

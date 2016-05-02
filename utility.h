@@ -9,7 +9,6 @@
 #include <netdb.h>
 #include <sys/epoll.h>
 
-
 using Socket = int;
 using Epoll = int;
 
