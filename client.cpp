@@ -5,7 +5,7 @@ void usageClient(const char **argv) {
   _exit(ExitCode::InvalidArguments);
 }
 
-std::pair<std::string, int> get_arguments(int argc, const char **argv) {
+std::pair<std::string, unsigned> get_arguments(int argc, const char **argv) {
   if (argc < 2 || argc > 3) {
     std::cerr << "Bad number of arguments\n";
     usageClient(argv);
@@ -18,7 +18,7 @@ std::pair<std::string, int> get_arguments(int argc, const char **argv) {
   if (argc == 2) {
     return std::make_pair(host, DEFAULT_PORT);
   }
-  int port = getPort(argv[2]);
+  unsigned port = getPort(argv[2]);
   if (port == INVALID_PORT) {
     std::cerr << "Bad port number\n";
     usageClient(argv);
@@ -26,7 +26,7 @@ std::pair<std::string, int> get_arguments(int argc, const char **argv) {
   return std::make_pair(host, port);
 }
 
-int connectClient(std::string host, int port) {
+Socket connectClient(std::string host, unsigned port) {
   addrinfo hints;
   addrinfo *result;
 
@@ -66,9 +66,9 @@ void checkStdin(Socket sock) {
 }
 
 int main(int argc, const char **argv) {
-  std::pair<std::string, int> p = get_arguments(argc, argv);
+  std::pair<std::string, unsigned> p = get_arguments(argc, argv);
   std::string host = p.first;
-  int port = p.second;
+  unsigned port = p.second;
   Socket sock = connectClient(host, port);
   makeSocketNonBlocking(sock);
   Epoll efd = _epoll_create();

@@ -5,7 +5,7 @@ void usageServer(const char **argv) {
   _exit(ExitCode::InvalidArguments);
 }
 
-int getArguments(int argc, const char **argv) {
+unsigned getArguments(int argc, const char **argv) {
   if (argc > 3) {
     std::cerr << "Bad number of arguments" << std::endl;
     usageServer(argv);
@@ -21,7 +21,7 @@ int getArguments(int argc, const char **argv) {
   return port;
 }
 
-Socket connectServer(int port) {
+Socket connectServer(unsigned port) {
   addrinfo hints;
   addrinfo *result;
 
@@ -136,7 +136,7 @@ void cleanup(Socket sock) {
 
 int main(int argc, const char **argv) {
   _signal([](int) { finished = true; });
-  int port = getArguments(argc, argv);
+  unsigned port = getArguments(argc, argv);
 #ifdef DEBUG
   std::cerr << "Listening on port: " << port << std::endl;
 #endif // DEBUG
