@@ -161,7 +161,7 @@ void sendTo(const Socket sock, const std::string &m) {
 }
 
 std::string receive(Socket from) {
-  unsigned char buffer[BUFFER_LEN];
+  static unsigned char buffer[BUFFER_LEN];
   std::string result = INVALID_MESSAGE;
   uint16_t len = 0;
   for (bool first = true; true;) {
