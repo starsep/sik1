@@ -49,6 +49,7 @@ bool checkSocket(epoll_event &event, Socket sock) {
       std::string msg = receive(sock);
       std::cout << msg << std::endl;
     } catch (BadNetworkDataException) {
+      std::cerr << "Incorrect data received from server. Exiting." << std::endl;
       cleanup(ExitCode::BadData);
     } catch (ClosedConnectionException) {
       cleanup(ExitCode::Ok);
