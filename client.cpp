@@ -1,18 +1,18 @@
 #include "utility.h"
 
 void usageClient(const char **argv) {
-  std::cerr << "Usage: " << argv[0] << " host [port]\n";
+  std::cerr << "Usage: " << argv[0] << " host [port]" << std::endl;
   _exit(ExitCode::InvalidArguments);
 }
 
 std::pair<std::string, unsigned> get_arguments(int argc, const char **argv) {
   if (argc < 2 || argc > 3) {
-    std::cerr << "Bad number of arguments\n";
+    std::cerr << "Bad number of arguments" << std::endl;
     usageClient(argv);
   }
   std::string host = getHost(argv[1]);
   if (host == INVALID_HOST) {
-    std::cerr << "Bad host\n";
+    std::cerr << "Bad host" << std::endl;
     usageClient(argv);
   }
   if (argc == 2) {
@@ -20,7 +20,7 @@ std::pair<std::string, unsigned> get_arguments(int argc, const char **argv) {
   }
   unsigned port = getPort(argv[2]);
   if (port == INVALID_PORT) {
-    std::cerr << "Bad port number\n";
+    std::cerr << "Bad port number" << std::endl;
     usageClient(argv);
   }
   return std::make_pair(host, port);
