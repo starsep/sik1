@@ -26,7 +26,7 @@ std::pair<std::string, unsigned> get_arguments(int argc, const char **argv) {
   return std::make_pair(host, port);
 }
 
-Socket connectClient(std::string host, unsigned port) {
+Socket connectClient(const std::string &host, unsigned port) {
   addrinfo hints;
   addrinfo *result;
 
