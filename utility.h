@@ -10,6 +10,7 @@
 #include <sys/epoll.h>
 
 using Socket = int;
+using File = int;
 using Epoll = int;
 
 class ClosedConnectionException {};
@@ -26,7 +27,7 @@ const int INFINITY = -1;
 
 const std::string INVALID_HOST = "";
 const std::string INVALID_MESSAGE = "";
-const Socket STDIN = 0;
+const File STDIN = 0;
 
 const size_t MAX_SOCKETS_CLIENT = 2;
 const size_t MAX_SOCKETS_SERVER = 21;
