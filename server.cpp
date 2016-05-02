@@ -1,13 +1,13 @@
 #include "utility.h"
 
 void usageServer(const char **argv) {
-  std::cerr << "Usage: " << argv[0] << " [port]" << std::endl;;
+  std::cerr << "Usage: " << argv[0] << " [port]" << std::endl;
   _exit(ExitCode::InvalidArguments);
 }
 
 int getArguments(int argc, const char **argv) {
   if (argc > 3) {
-    std::cerr << "Bad number of arguments" << std::endl;;
+    std::cerr << "Bad number of arguments" << std::endl;
     usageServer(argv);
   }
   if (argc == 1) {
@@ -15,7 +15,7 @@ int getArguments(int argc, const char **argv) {
   }
   unsigned port = getPort(argv[1]);
   if (port == INVALID_PORT) {
-    std::cerr << "Bad port number" << std::endl;;
+    std::cerr << "Bad port number" << std::endl;
     usageServer(argv);
   }
   return port;
