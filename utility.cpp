@@ -181,6 +181,7 @@ std::string receive(Socket from) {
     }
   }
   if (len > MAX_LEN || result.size() != len) {
+    //std::cerr << len << " " << MAX_LEN << " " << result.size() << " " << len << std::endl;
     throw BadNetworkDataException();
   }
   return result;
