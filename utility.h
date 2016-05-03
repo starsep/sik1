@@ -29,8 +29,8 @@ const std::string INVALID_HOST = "";
 const std::string INVALID_MESSAGE = "";
 const File STDIN = 0;
 
-const size_t MAX_SOCKETS_CLIENT = 2;
-const size_t MAX_SOCKETS_SERVER = 21;
+const size_t MAX_EVENTS_CLIENT = 1500;
+const size_t MAX_EVENTS_SERVER = 1500;
 
 const uint16_t BYTE = 256;
 
