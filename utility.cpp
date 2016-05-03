@@ -168,7 +168,7 @@ void receiveOne(Socket from, std::vector<std::string> &msgs) {
   uint16_t len = 0;
   bool allMessages = false;
   for (bool first = true; true; first = false) {
-    ssize_t count = _read(from, buffer, BUFFER_LEN);
+    ssize_t count = _read(from, buffer, first ? BUFFER_LEN : std::min(BUFFER_LEN, len - result.size()));
     if (count == -1 && errno == EAGAIN) {
       allMessages = true;
       break;
