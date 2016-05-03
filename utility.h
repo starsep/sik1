@@ -32,7 +32,7 @@ const File STDIN = 0;
 const size_t MAX_SOCKETS_CLIENT = 2;
 const size_t MAX_SOCKETS_SERVER = 21;
 
-const uint16_t BYTE = 0xff;
+const uint16_t BYTE = 256;
 
 enum class ExitCode {
   Ok = 0,
