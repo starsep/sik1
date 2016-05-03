@@ -5,7 +5,7 @@ void usageClient(const char **argv) {
   _exit(ExitCode::InvalidArguments);
 }
 
-std::pair<std::string, unsigned> get_arguments(int argc, const char **argv) {
+std::pair<std::string, unsigned> getArguments(int argc, const char **argv) {
   if (argc < 2 || argc > 3) {
     std::cerr << "Bad number of arguments" << std::endl;
     usageClient(argv);
@@ -66,7 +66,7 @@ void checkStdin(Socket sock) {
 }
 
 int main(int argc, const char **argv) {
-  std::pair<std::string, unsigned> p = get_arguments(argc, argv);
+  std::pair<std::string, unsigned> p = getArguments(argc, argv);
   std::string host = p.first;
   unsigned port = p.second;
   Socket sock = connectClient(host, port);
