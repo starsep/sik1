@@ -107,10 +107,11 @@ bool checkListeningSocket(epoll_event &event, Socket sock, Epoll efd,
   return false;
 }
 
-std::string getClientData(epoll_event &event, std::vector<Socket> &clients) {
-  std::string result;
+std::vector<std::string> getClientData(epoll_event &event,
+                                       std::vector<Socket> &clients) {
+  std::vector<std::string> result;
   try {
-    result = receive(event.data.fd);
+    result = receiveAll(event.data.fd);
   } catch (...) {
     removeClient(clients, event.data.fd);
   }
@@ -153,9 +154,11 @@ int main(int argc, const char **argv) {
     for (int i = 0; i < numberOfEvents; i++) {
       if (!checkEpollError(events[i], clients) &&
           !checkListeningSocket(events[i], sock, efd, clients)) {
-        std::string result = getClientData(events[i], clients);
-        if (result.size() > 0) {
-          sendToOthers(clients, events[i].data.fd, result);
+        auto msgs = getClientData(events[i], clients);
+        for (auto &msg : msgs) {
+          if (msg.size() > 0) {
+            sendToOthers(clients, events[i].data.fd, msg);
+          }
         }
       }
     }

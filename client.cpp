@@ -51,8 +51,10 @@ void cleanup(ExitCode exitCode) {
 bool checkSocket(epoll_event &event, Socket sock) {
   if (event.data.fd == sock) {
     try {
-      std::string msg = receive(sock);
-      std::cout << msg << std::endl;
+      std::vector<std::string> msgs = receiveAll(sock);
+      for (auto &msg : msgs) {
+        std::cout << msg << std::endl;
+      }
     } catch (BadNetworkDataException) {
       std::cerr << "Incorrect data received from server. Exiting." << std::endl;
       cleanup(ExitCode::BadData);

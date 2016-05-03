@@ -59,6 +59,6 @@ void addEpollEvent(Epoll, Socket);
 void _signal(void (*)(int));
 Socket _accept(Socket, sockaddr *, socklen_t *);
 void sendTo(const Socket, const std::string &);
-std::string receive(Socket);
+std::vector<std::string> receiveAll(Socket);
 
 #endif // SIK1_UTILITY_H

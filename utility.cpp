@@ -160,13 +160,17 @@ void sendTo(const Socket sock, const std::string &m) {
   delete[] buf;
 }
 
-std::string receive(Socket from) {
+class AllMessagesReadException {};
+
+void receiveOne(Socket from, std::vector<std::string> &msgs) {
   static unsigned char buffer[BUFFER_LEN];
   std::string result = INVALID_MESSAGE;
   uint16_t len = 0;
-  for (bool first = true; true;) {
+  bool allMessages = false;
+  for (bool first = true; true; first = false) {
     ssize_t count = _read(from, buffer, BUFFER_LEN);
     if (count == -1 && errno == EAGAIN) {
+      allMessages = true;
       break;
     }
     if (count == 0) {
@@ -175,14 +179,35 @@ std::string receive(Socket from) {
     if (first) {
       len = buffer[0] * BYTE + buffer[1];
       result += std::string((char *)(buffer) + HEADER_LEN, count - HEADER_LEN);
-      first = false;
     } else {
       result += std::string((char *)(buffer), count);
     }
+    if (result.size() == len) {
+      break;
+    }
   }
   if (len > MAX_LEN || result.size() != len) {
-    //std::cerr << len << " " << MAX_LEN << " " << result.size() << " " << len << std::endl;
+    // std::cerr << len << " " << MAX_LEN << " " << result.size() << " " << len
+    // << std::endl;
     throw BadNetworkDataException();
   }
-  return result;
+  if (!result.empty()) {
+    msgs.push_back(result);
+  }
+  if (allMessages) {
+    throw AllMessagesReadException();
+  }
+}
+
+std::vector<std::string> receiveAll(Socket from) {
+  std::vector<std::string> result;
+  while (true) {
+    try {
+      receiveOne(from, result);
+    } catch (AllMessagesReadException) {
+      return result;
+    } catch (...) {
+      throw;
+    }
+  }
 }
