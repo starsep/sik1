@@ -41,7 +41,12 @@ Socket connectClient(const std::string &host, unsigned port) {
   return sock;
 }
 
-void cleanup(ExitCode exitCode) { _exit(exitCode); }
+epoll_event *events;
+
+void cleanup(ExitCode exitCode) {
+  delete[] events;
+  _exit(exitCode);
+}
 
 bool checkSocket(epoll_event &event, Socket sock) {
   if (event.data.fd == sock) {
@@ -75,14 +80,14 @@ int main(int argc, const char **argv) {
   addEpollEvent(efd, sock);
   addEpollEvent(efd, STDIN);
 
+  events = new epoll_event[MAX_EVENTS_CLIENT];
+
   while (true) {
-    epoll_event *events = new epoll_event[MAX_SOCKETS_CLIENT];
-    int numberOfEvents = epoll_wait(efd, events, MAX_SOCKETS_CLIENT, INFINITY);
+    int numberOfEvents = epoll_wait(efd, events, MAX_EVENTS_CLIENT, INFINITY);
     for (int i = 0; i < numberOfEvents; i++) {
       if (!checkSocket(events[i], sock)) {
         checkStdin(sock);
       }
     }
-    delete[] events;
   }
 }

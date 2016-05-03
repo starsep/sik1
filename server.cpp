@@ -128,9 +128,10 @@ void sendToOthers(const std::vector<Socket> &clients, const Socket sender,
 
 static bool finished = false;
 
-void cleanup(Socket sock) {
+void cleanup(Socket sock, epoll_event *events) {
   shutdown(sock, SHUT_RDWR);
   _close(sock);
+  delete[] events;
   _exit(ExitCode::Ok);
 }
 
@@ -145,10 +146,10 @@ int main(int argc, const char **argv) {
   addEpollEvent(efd, sock);
 
   std::vector<Socket> clients;
+  epoll_event *events = new epoll_event[MAX_EVENTS_SERVER];
 
   while (!finished) {
-    epoll_event *events = new epoll_event[MAX_SOCKETS_SERVER];
-    int numberOfEvents = epoll_wait(efd, events, MAX_SOCKETS_SERVER, INFINITY);
+    int numberOfEvents = epoll_wait(efd, events, MAX_EVENTS_SERVER, INFINITY);
     for (int i = 0; i < numberOfEvents; i++) {
       if (!checkEpollError(events[i], clients) &&
           !checkListeningSocket(events[i], sock, efd, clients)) {
@@ -158,7 +159,6 @@ int main(int argc, const char **argv) {
         }
       }
     }
-    delete[] events;
   }
-  cleanup(sock);
+  cleanup(sock, events);
 }
