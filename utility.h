@@ -6,8 +6,11 @@
 #include <string>
 #include <vector>
 
+#include <csignal>
 #include <netdb.h>
 #include <sys/epoll.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 using Socket = int;
 using File = int;
@@ -15,6 +18,8 @@ using Epoll = int;
 
 class ClosedConnectionException {};
 class BadNetworkDataException {};
+class EmptyMessageException {};
+class MessageWithNewlineException {};
 
 const unsigned DEFAULT_PORT = 20160;
 const unsigned MIN_PORT = 1;
@@ -57,8 +62,9 @@ void _listen(Socket);
 Epoll _epoll_create();
 void addEpollEvent(Epoll, Socket);
 void _signal(void (*)(int));
+void _signal_default();
 Socket _accept(Socket, sockaddr *, socklen_t *);
 void sendTo(const Socket, const std::string &);
-std::vector<std::string> receiveAll(Socket);
+std::vector<std::string> receiveAll(Socket, std::string &);
 
 #endif // SIK1_UTILITY_H

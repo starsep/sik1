@@ -120,14 +120,20 @@ Epoll _epoll_create() {
 void addEpollEvent(Epoll efd, Socket sock) {
   epoll_event event;
   event.data.fd = sock;
-  event.events = EPOLLIN | EPOLLET;
+  event.events = EPOLLIN | EPOLLET | EPOLLHUP;
   if (epoll_ctl(efd, EPOLL_CTL_ADD, sock, &event) == -1) {
     syserr("epoll_ctl");
   }
 }
 
 void _signal(sighandler_t sighandler) {
-  if (signal(SIGINT, sighandler)) {
+  if (signal(SIGINT, sighandler) == SIG_ERR) {
+    syserr("signal");
+  }
+}
+
+void _signal_default() {
+  if (signal(SIGINT, SIG_DFL) == SIG_ERR) {
     syserr("signal");
   }
 }
@@ -149,6 +155,9 @@ Socket _accept(Socket sock, sockaddr *addr, socklen_t *addrlen) {
 }
 
 void sendTo(const Socket sock, const std::string &m) {
+  if (m.empty()) {
+    return;
+  }
   std::string msg = m.size() > MAX_LEN ? m.substr(0, MAX_LEN) : m;
   unsigned char *buf = new unsigned char[HEADER_LEN + msg.size()];
   buf[0] = msg.size() / BYTE;
@@ -162,13 +171,15 @@ void sendTo(const Socket sock, const std::string &m) {
 
 class AllMessagesReadException {};
 
-void receiveOne(Socket from, std::vector<std::string> &msgs) {
+void receiveOne(Socket from, std::vector<std::string> &msgs, std::string &next) {
   static unsigned char buffer[BUFFER_LEN];
-  std::string result = INVALID_MESSAGE;
+  std::string result = next;
   uint16_t len = 0;
   bool allMessages = false;
   for (bool first = true; true; first = false) {
-    ssize_t count = _read(from, buffer, first ? BUFFER_LEN : std::min(BUFFER_LEN, len - result.size()));
+    ssize_t count =
+        _read(from, buffer,
+              first ? BUFFER_LEN : std::min(BUFFER_LEN, len - result.size()));
     if (count == -1 && errno == EAGAIN) {
       allMessages = true;
       break;
@@ -186,10 +197,12 @@ void receiveOne(Socket from, std::vector<std::string> &msgs) {
       break;
     }
   }
-  if (len > MAX_LEN || result.size() != len) {
-    // std::cerr << len << " " << MAX_LEN << " " << result.size() << " " << len
-    // << std::endl;
+  if (len > MAX_LEN || result.size() > len) {
     throw BadNetworkDataException();
+  }
+  if (result.size() < len) {
+    next = result;
+    return;
   }
   if (!result.empty()) {
     msgs.push_back(result);
@@ -197,13 +210,21 @@ void receiveOne(Socket from, std::vector<std::string> &msgs) {
   if (allMessages) {
     throw AllMessagesReadException();
   }
+  for (char c : result) {
+    if (c == '\n' or c == '\0') {
+      throw BadNetworkDataException();
+    }
+  }
+  /*if (result.empty()) {
+    throw BadNetworkDataException();
+  }*/
 }
 
-std::vector<std::string> receiveAll(Socket from) {
+std::vector<std::string> receiveAll(Socket from, std::string &next) {
   std::vector<std::string> result;
   while (true) {
     try {
-      receiveOne(from, result);
+      receiveOne(from, result, next);
     } catch (AllMessagesReadException) {
       return result;
     } catch (...) {

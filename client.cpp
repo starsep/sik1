@@ -2,17 +2,20 @@
 
 void usageClient(const char **argv) {
   std::cerr << "Usage: " << argv[0] << " host [port]" << std::endl;
+  std::cerr.flush();
   _exit(ExitCode::InvalidArguments);
 }
 
 std::pair<std::string, unsigned> getArguments(int argc, const char **argv) {
   if (argc < 2 || argc > 3) {
     std::cerr << "Bad number of arguments" << std::endl;
+    std::cerr.flush();
     usageClient(argv);
   }
   std::string host = getHost(argv[1]);
   if (host == INVALID_HOST) {
     std::cerr << "Bad host" << std::endl;
+    std::cerr.flush();
     usageClient(argv);
   }
   if (argc == 2) {
@@ -21,6 +24,7 @@ std::pair<std::string, unsigned> getArguments(int argc, const char **argv) {
   unsigned port = getPort(argv[2]);
   if (port == INVALID_PORT) {
     std::cerr << "Bad port number" << std::endl;
+    std::cerr.flush();
     usageClient(argv);
   }
   return std::make_pair(host, port);
@@ -51,12 +55,15 @@ void cleanup(ExitCode exitCode) {
 bool checkSocket(epoll_event &event, Socket sock) {
   if (event.data.fd == sock) {
     try {
-      std::vector<std::string> msgs = receiveAll(sock);
+      std::string empty;
+      std::vector<std::string> msgs = receiveAll(sock, empty);
       for (auto &msg : msgs) {
         std::cout << msg << std::endl;
+        std::cout.flush();
       }
     } catch (BadNetworkDataException) {
       std::cerr << "Incorrect data received from server. Exiting." << std::endl;
+      std::cerr.flush();
       cleanup(ExitCode::BadData);
     } catch (ClosedConnectionException) {
       cleanup(ExitCode::Ok);
