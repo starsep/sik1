@@ -215,9 +215,6 @@ void receiveOne(Socket from, std::vector<std::string> &msgs, std::string &next) 
       throw BadNetworkDataException();
     }
   }
-  /*if (result.empty()) {
-    throw BadNetworkDataException();
-  }*/
 }
 
 std::vector<std::string> receiveAll(Socket from, std::string &next) {
