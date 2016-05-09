@@ -212,6 +212,7 @@ void receiveOne(Socket from, std::vector<std::string> &msgs, std::string &next) 
   }
   for (char c : result) {
     if (c == '\n' or c == '\0') {
+      msgs.pop_back();
       throw BadNetworkDataException();
     }
   }
